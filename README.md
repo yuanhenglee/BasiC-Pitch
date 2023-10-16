@@ -141,36 +141,36 @@ if __name__ == "__main__":
 ## Schedule
 
 * Week 1 (10/30):
-    - [] Set up the environment and project structure
-    - [] Test the pure Python prototype
-    - [] Learning in-depth about CQT
+    - [ ] Set up the environment and project structure
+    - [ ] Test the pure Python prototype
+    - [ ] Learning in-depth about CQT
 * Week 2 (11/06):
-    - [] Implement CQT ( in C++ and wrap it with pybind11 )
-    - [] Write tests for CQT correctness
+    - [ ] Implement CQT ( in C++ and wrap it with pybind11 )
+    - [ ] Write tests for CQT correctness
 * Week 3 (11/13):
-    - [] Implement the initialization of the CNN architecture
-    - [] Implement the inference function ( in C++ and wrap it with pybind11 )
+    - [ ] Implement the initialization of the CNN architecture
+    - [ ] Implement the inference function ( in C++ and wrap it with pybind11 )
 * Week 4 (11/20):
-    - [] Gather the pre-trained CNN model weights in desired format
-    - [] Implement the weight loader for the CNN model in C++
-    - [] Write tests for the note generation
+    - [ ] Gather the pre-trained CNN model weights in desired format
+    - [ ] Implement the weight loader for the CNN model in C++
+    - [ ] Write tests for the note generation
 * Week 5 (11/27):
-    - [] Implement the post-processing steps
-    - [] Write tests for the post-processing steps
-    - [] Implement the note alignment
-    - [] Write tests for the note alignment
+    - [ ] Implement the post-processing steps
+    - [ ] Write tests for the post-processing steps
+    - [ ] Implement the note alignment
+    - [ ] Write tests for the note alignment
 * Week 6 (12/04):
-    - [] Try to improve the inference speed
-        - [] XSIMD
-        - [] Eigen
-        - [] OpenMP
-        - [] ...
+    - [ ] Try to improve the inference speed
+        - [ ] XSIMD
+        - [ ] Eigen
+        - [ ] OpenMP
+        - [ ] ...
 * Week 7 (12/11):
-    - [] Write documentation
-    - [] Write examples
+    - [ ] Write documentation
+    - [ ] Write examples
 * Week 8 (12/18):
-    - [] Refine the project structure
-    - []Prepare for the presentation
+    - [ ] Refine the project structure
+    - [ ]Prepare for the presentation
 
 
 ## References
