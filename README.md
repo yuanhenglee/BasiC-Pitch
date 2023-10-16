@@ -170,7 +170,7 @@ if __name__ == "__main__":
     - [ ] Write examples
 * Week 8 (12/18):
     - [ ] Refine the project structure
-    - [ ]Prepare for the presentation
+    - [ ] Prepare for the presentation
 
 
 ## References
