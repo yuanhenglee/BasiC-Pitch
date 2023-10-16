@@ -8,7 +8,7 @@ Music Transcription) library written in C++.
 BasiCPP Pitch is an instrument-agnostic and polyphonic-capable AMT (Automatic
 Music Transcription) library written in C++.
 
-- github repository:[]()
+- github repository:[repo](https://github.com/yuanhenglee/basicpp-pitch)
 
 Provide any compatible audio file, the library will generate a MIDI file with
 the notes it detected. The library also provides Python API, which is
