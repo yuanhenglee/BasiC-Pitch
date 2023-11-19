@@ -1,3 +1,9 @@
+# lib folder
+lib/
+
+# build folder
+build/
+
 # Prerequisites
 *.d
 
