@@ -7,34 +7,47 @@ CQParams::CQParams(float sample_rate, int bins_per_octave, float freq_min, float
     std::cout<<"CQParams constructor"<<std::endl;
 }   
 
-py::array_t<double> constantQTransform(
-    py::array_t<double> audio,
+/*
+    This function is the entry point of the CQT algorithm for the pybind interface.
+    Input:
+        audio: a NumPy array of type float and shape (length, n_channels)
+        params: a CQParams object
+    Output: 
+        a NumPy array of type float and shape (length * n_freq_dims, n_channels)
+*/
+py::array_t<float> constantQTransform(
+    py::array_t<float> audio,
     CQParams params
 ) {
-    // Get a pointer to the audio data
-    auto ptr = audio.unchecked<1>();
 
-    // CQT implementation
+    CQ t(params);
+    py::array_t<float> result = t.compute_cqt(audio);
+
+    return result;
+
+}
+
+CQ::CQ(CQParams params) : params(params) {
+    runKernel();
+}
+
+CQ::~CQ() {
+    std::cout<<"CQ destructor"<<std::endl;
+}
+
+void CQ::runKernel() {
+    std::cout<<"CQ::runKernel()"<<std::endl;
+}
+
+py::array_t<float> CQ::compute_cqt(py::array_t<float> audio) {
+    std::cout<<"CQ::compute_cqt()"<<std::endl;
+    py::buffer_info buf = audio.request();
+    int length = buf.shape[0];  
+    int n_channels = buf.shape[1];  
+    std::cout<<"length: "<<length<<std::endl;
+    std::cout<<"n_channels: "<<n_channels<<std::endl;
     // TODO
-    // int n_octaves = (int)std::ceil(float());
-
-    // temp placeholder
-    std::vector<double> result(ptr.shape(0));
-    for (ssize_t i = 0; i < ptr.shape(0); i++) {
-        result[i] = ptr(i);
-    }
-#ifdef DEBUG
-    std::cout<<params.sample_rate<<std::endl;       
-    std::cout<<params.bins_per_octave<<std::endl;
-    std::cout<<params.freq_min<<std::endl;
-    std::cout<<params.freq_max<<std::endl;
-    std::cout<<params.n_bins<<std::endl;
-#endif
-
-    // Create a NumPy array from the result and return
-    return pybind11::array_t<double>(
-        {static_cast<ssize_t>(result.size())}, // Shape
-        {sizeof(double)},                      // Strides
-        result.data()                          // Pointer to data
-    );
+    //temporarily return the input audio
+    py::array_t<float> result = py::array_t<float>(audio);
+    return result;
 }
