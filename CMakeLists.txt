@@ -5,6 +5,19 @@ project(BasiCPP_Pitch VERSION 1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Global settings
+set(LDFLAGS "-O3 -fopenmp -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
+
+# fftw
+set(FFTW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/fftw-3.3.10/build )
+link_libraries(${FFTW_ROOT}/lib/libfftw3f.so)
+include_directories(${FFTW_ROOT}/include)
+
+# Eigen
+set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
+include_directories(${EIGEN_ROOT})
+
 # Find Python and pybind11 package
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
