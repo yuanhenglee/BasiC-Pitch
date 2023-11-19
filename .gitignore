@@ -1,5 +1,6 @@
-# .vscode folder
+# redundant files
 .vscode/
+.pytest_cache/
 
 # lib folder
 lib/

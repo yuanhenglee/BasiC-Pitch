@@ -14,5 +14,9 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
         .def_readwrite("freq_min", &CQParams::freq_min)
         .def_readwrite("freq_max", &CQParams::freq_max)
         .def_readwrite("n_bins", &CQParams::n_bins);
-    m.def("CQT", &constantQTransform);
+    py::class_<CQ>(m, "CQ")
+        .def(py::init<CQParams>(), py::arg("params"))
+        .def("compute_cqt", &CQ::compute_cqt);
+
+
 }

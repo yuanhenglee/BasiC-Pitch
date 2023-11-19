@@ -26,6 +26,7 @@ find_package(pybind11 REQUIRED)
 set(SOURCES
     ./src/main.cpp
     ./src/CQT.cpp
+    ./src/utils.cpp
 )
 
 # Set so library output path
