@@ -15,7 +15,8 @@ link_libraries(${FFTW_ROOT}/lib/libfftw3f.so)
 include_directories(${FFTW_ROOT}/include)
 
 # Eigen
-set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
+# set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
+set(EIGEN_ROOT /usr/include/eigen3)
 include_directories(${EIGEN_ROOT})
 
 # Find Python and pybind11 package
