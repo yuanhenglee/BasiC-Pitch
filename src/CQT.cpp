@@ -102,6 +102,11 @@ void CQ::computeKernel() {
     _kernel.makeCompressed();
 }
 
+Matrixf CQ::forward(Vectorcf x) {
+    //TODO: implement
+    return Matrixf::Zero(1, 1);
+}
+
 py::array_t<float> CQ::compute_cqt(py::array_t<float> audio) {
     std::cout<<"CQ::compute_cqt()"<<std::endl;
     py::buffer_info buf = audio.request();
@@ -109,7 +114,9 @@ py::array_t<float> CQ::compute_cqt(py::array_t<float> audio) {
     int n_channels = buf.shape[1];  
     std::cout<<"length: "<<length<<std::endl;
     std::cout<<"n_channels: "<<n_channels<<std::endl;
-    // TODO
+
+    //TODO: implement
+
     //temporarily return the input audio
     py::array_t<float> result = py::array_t<float>(audio);
     return result;

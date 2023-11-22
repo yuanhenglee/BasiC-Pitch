@@ -43,8 +43,9 @@ class CQ {
     private:
         int _n_freq;
         Eigen::SparseMatrix<std::complex<float>> _kernel;
-        void computeKernel();
         CQParams params;
+        void computeKernel();
+        Matrixf forward(Vectorcf x);
 };  
 
 
