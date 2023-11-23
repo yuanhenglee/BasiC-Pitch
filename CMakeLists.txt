@@ -15,8 +15,8 @@ link_libraries(${FFTW_ROOT}/lib/libfftw3f.so)
 include_directories(${FFTW_ROOT}/include)
 
 # Eigen
-# set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
-set(EIGEN_ROOT /usr/include/eigen3)
+set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
+# set(EIGEN_ROOT /usr/include/eigen3)
 include_directories(${EIGEN_ROOT})
 
 # Find Python and pybind11 package
@@ -30,11 +30,17 @@ set(SOURCES
     ./src/utils.cpp
 )
 
+# Set headers for the library
+set(HEADERS
+    ./src/CQT.h
+    ./src/utils.h
+)
+
 # Set so library output path
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 # Create the shared library
-pybind11_add_module(BasiCPP_Pitch MODULE ${SOURCES})
+pybind11_add_module(BasiCPP_Pitch MODULE ${SOURCES} ${HEADERS})
 
 # Create so library
 target_compile_definitions(BasiCPP_Pitch PRIVATE VERSION_INFO=${PROJECT_VERSION})

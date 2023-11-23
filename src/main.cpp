@@ -1,22 +1,44 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-// #include "BasiCPP_Pitch.h"
 #include "CQT.h"
-// namespace py = pybind11;
+#include "constant.h"
+
 PYBIND11_MODULE(BasiCPP_Pitch, m) {
     // py::class<BasiCPP_Pitch>(m, "BasiCPP_Pitch")
     //     .def(py::init<>())
     //     .def("transcribeAudio", &BasiCPP_Pitch::transcribeAudio);
+
     py::class_<CQParams>(m, "CQParams")
-        .def(py::init<float, int, float, float, int>(), py::arg("sample_rate"), py::arg("bins_per_octave"), py::arg("freq_min"), py::arg("freq_max"), py::arg("n_bins"))
-        .def_readwrite("sample_rate", &CQParams::sample_rate)
-        .def_readwrite("bins_per_octave", &CQParams::bins_per_octave)
-        .def_readwrite("freq_min", &CQParams::freq_min)
-        .def_readwrite("freq_max", &CQParams::freq_max)
-        .def_readwrite("n_bins", &CQParams::n_bins);
+        .def(py::init<int, int, int, int, float>(),
+            py::arg("sample_rate") = DEFAULT_SAMPLE_RATE,
+            py::arg("bins_per_octave") = DEFAULT_BINS_PER_OCTAVE,
+            py::arg("freq_min") = DEFAULT_MIN_FREQ,
+            py::arg("freq_max") = DEFAULT_MAX_FREQ,
+            py::arg("hop_size") = DEFAULT_HOP_SIZE
+        )
+        .def("__repr__",
+        [] (const CQParams &params) {
+            return "<CQParams\n"
+                "sample_rate: " + std::to_string(params.sample_rate) + "\n"
+                "bins_per_octave: " + std::to_string(params.bins_per_octave) + "\n"
+                "freq_min: " + std::to_string(params.freq_min) + "\n"
+                "freq_max: " + std::to_string(params.freq_max) + "\n"
+                "hop_size: " + std::to_string(params.hop_size) + "\n"
+                "n_freq: " + std::to_string(params.n_freq) + "\n"
+                "quality_factor: " + std::to_string(params.quality_factor) + "\n"
+                "fft_window_size: " + std::to_string(params.fft_window_size) + "\n"
+                "frame_per_second: " + std::to_string(params.frame_per_second) + "\n"
+                "sample_per_frame: " + std::to_string(params.sample_per_frame) + "\n"
+                ">";
+        });
     py::class_<CQ>(m, "CQ")
         .def(py::init<CQParams>(), py::arg("params"))
-        .def("compute_cqt", &CQ::compute_cqt);
+        .def("compute_cqt", &CQ::cqt_Py);
 
+    // m.attr("redirect_output") = py::capsule(
+    //     new py::scoped_output_redirect(...), [](void *sor) {
+    //         delete static_cast<py::scoped_output_redirect *>(sor);
+    //     }
+    // );
 
 }

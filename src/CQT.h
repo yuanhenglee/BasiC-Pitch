@@ -21,31 +21,46 @@ namespace py = pybind11;
 class CQParams {
     public:
         // init params  
-        float sample_rate;
+        int sample_rate;
         int bins_per_octave;
-        float freq_min;
-        float freq_max;
-        int n_bins;
+        int freq_min;
+        int freq_max;
+        // int n_bins; deprecated, replaced by n_freq
+        float hop_size;
 
         // computed params
-        float n_freq;
+        int n_freq; // n_bins
         float quality_factor;
         int fft_window_size;
+        int frame_per_second;
+        int sample_per_frame;
 
-        CQParams(float sample_rate, int bins_per_octave, float freq_min, float freq_max, int n_bins);   
+        CQParams(
+            int sample_rate,
+            int bins_per_octave,
+            int freq_min,
+            int freq_max,
+            float hop_size
+        );
 };
 
 class CQ {
     public:
         CQ(CQParams params);
         ~CQ();
-        py::array_t<float> compute_cqt(py::array_t<float> audio);
+
+        // compute cqt API for POD IO
+        void cqt_POD(float* audio, int &audio_len, float* output, int &output_len);        
+
+        // compute cqt API for np.array IO
+        py::array_t<float> cqt_Py(py::array_t<float> audio);
+
     private:
         int _n_freq;
         Eigen::SparseMatrix<std::complex<float>> _kernel;
         CQParams params;
         void computeKernel();
-        Matrixf forward(Vectorcf x);
+        Matrixf forward( const Vectorf& x);
 };  
 
 
