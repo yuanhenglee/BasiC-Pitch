@@ -1,6 +1,7 @@
 # redundant files
 .vscode/
 .pytest_cache/
+tests/.pytest_cache/
 
 # lib folder
 lib/

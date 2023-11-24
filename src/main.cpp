@@ -9,12 +9,12 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
     //     .def("transcribeAudio", &BasiCPP_Pitch::transcribeAudio);
 
     py::class_<CQParams>(m, "CQParams")
-        .def(py::init<int, int, int, int, float>(),
+        .def(py::init<int, int, int, float, int>(),
             py::arg("sample_rate") = DEFAULT_SAMPLE_RATE,
             py::arg("bins_per_octave") = DEFAULT_BINS_PER_OCTAVE,
+            py::arg("n_bins") = DEFAULT_N_BINS,
             py::arg("freq_min") = DEFAULT_MIN_FREQ,
-            py::arg("freq_max") = DEFAULT_MAX_FREQ,
-            py::arg("hop_size") = DEFAULT_HOP_SIZE
+            py::arg("hop") = DEFAULT_HOP
         )
         .def("__repr__",
         [] (const CQParams &params) {
@@ -23,7 +23,7 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
                 "bins_per_octave: " + std::to_string(params.bins_per_octave) + "\n"
                 "freq_min: " + std::to_string(params.freq_min) + "\n"
                 "freq_max: " + std::to_string(params.freq_max) + "\n"
-                "hop_size: " + std::to_string(params.hop_size) + "\n"
+                "hop: " + std::to_string(params.hop) + "\n"
                 "n_freq: " + std::to_string(params.n_freq) + "\n"
                 "quality_factor: " + std::to_string(params.quality_factor) + "\n"
                 "fft_window_size: " + std::to_string(params.fft_window_size) + "\n"

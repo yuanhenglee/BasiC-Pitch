@@ -19,36 +19,36 @@ static std::vector<float> getHammingWindow(int window_size) {
     return window;
 }
 
-static std::vector<float> getArangeWindow(int window_size) {
-    int start = -(window_size - 1) / 2, end = (window_size - 1) / 2;
-    std::vector<float> window;
-    window.reserve(window_size);
-    for ( int i = start ; i <= end ; i++ ) {
-        window.push_back(i);
-    }
-    return window;
-}
+// static std::vector<float> getArangeWindow(int window_size) {
+//     int start = -(window_size - 1) / 2, end = (window_size - 1) / 2;
+//     std::vector<float> window;
+//     window.reserve(window_size);
+//     for ( int i = start ; i <= end ; i++ ) {
+//         window.push_back(i);
+//     }
+//     return window;
+// }
 
 CQParams::CQParams(
     int sample_rate,
     int bins_per_octave,
-    int freq_min,
-    int freq_max,
-    float hop_size
+    int n_bins,
+    float freq_min,
+    int hop
 )
-    : sample_rate(sample_rate), bins_per_octave(bins_per_octave), freq_min(freq_min), freq_max(freq_max), hop_size(hop_size) {  
+    : sample_rate(sample_rate), bins_per_octave(bins_per_octave), freq_min(freq_min), hop(hop) {  
 
-    n_freq = round(
-        static_cast<float>(bins_per_octave) * log2(
-            static_cast<float>(freq_max) / freq_min
-    ));
+    freq_max = freq_min * pow(2.0f, static_cast<float>(n_bins-1) / bins_per_octave);
+    n_freq = n_bins;
     quality_factor = 1.0f / (pow(2.0f, 1.0f / bins_per_octave) - 1.0f);
     fft_window_size = static_cast<int>(pow(2.0f, 
         ceil(
             log2(quality_factor * sample_rate / freq_min) + 1e-6
         )));
-    frame_per_second = static_cast<int>(1 / hop_size);
-    sample_per_frame = round(static_cast<float>(sample_rate) / frame_per_second);
+    // frame_per_second = static_cast<int>(1 / hop_size);
+    // sample_per_frame = round(static_cast<float>(sample_rate) / frame_per_second);
+    sample_per_frame = hop;
+    frame_per_second = static_cast<int>(static_cast<float>(sample_rate) / sample_per_frame);
 }   
 
 CQ::CQ(CQParams params) : params(params) {
@@ -59,7 +59,6 @@ CQ::CQ(CQParams params) : params(params) {
 CQ::~CQ() = default;
 
 void CQ::computeKernel() {
-    // std::cout<<"CQ::runKernel()"<<std::endl;
     Matrixcf kernel = Matrixcf::Zero(params.n_freq, params.fft_window_size);
     for ( int i = 0 ; i < params.n_freq ; i++ ) {
 
@@ -71,11 +70,11 @@ void CQ::computeKernel() {
         Vectorcf temporal_kernel = Vectorcf::Zero(window_length);
 
         std::vector<float> hamming_window = getHammingWindow(window_length);
-        std::vector<float> arange_window = getArangeWindow(window_length);
+        // std::vector<float> arange_window = getArangeWindow(window_length);
 
         for ( int j = 0 ; j < window_length ; j++ ) {
             std::complex<float> temp = std::complex<float>(
-                0.0f, 2.0f * M_PI * params.quality_factor * arange_window[j] / window_length
+                0.0f, 2.0f * M_PI * params.quality_factor * (j - (window_length-1)/2 ) / static_cast<float>(window_length)
             );
             temporal_kernel[j] = std::exp(temp) * 
                 std::complex<float>(hamming_window[j] / window_length, 0.0f);
@@ -97,7 +96,7 @@ void CQ::computeKernel() {
     // Set small values to zero and non-small values to conjugate of itself / fft_window_size   
     for ( int i = 0 ; i < params.n_freq ; i++ ) {
         for ( int j = 0 ; j < params.fft_window_size ; j++ ) {
-            if ( kernel.cwiseAbs().array()(i, j) < 1e-8 ) {
+            if ( kernel.cwiseAbs().array()(i, j) < 0.01 ) {
                 // do nothing
                 ;
             }
@@ -117,33 +116,32 @@ void CQ::computeKernel() {
 }
 
 Matrixf CQ::forward( const Vectorf &x ) {
-    int n_sample_x = static_cast<float>(x.size()) / params.sample_per_frame;
-    assert(n_sample_x > 0 && "Input signal is too short");
-    int left = ceil((params.fft_window_size - params.frame_per_second) / 2.0f);
-    int right = floor((params.fft_window_size - params.frame_per_second) / 2.0f);
+    // number of fft windows we can do is the number of frames we can divide from x plus 1
+    int n_fft_x = x.size() / params.sample_per_frame;
+    assert(n_fft_x > 0 && "Input signal is too short");
+    int left = ceil((params.fft_window_size - params.sample_per_frame) / 2.0f);
+    int right = floor((params.fft_window_size - params.sample_per_frame) / 2.0f);
 
     Vectorf padded_x = Vectorf::Zero(left + x.size() + right);
     padded_x.segment(left, x.size()) = x;
 
     Eigen::FFT<float> fft;
-    Matrixcf fft_x(n_sample_x, params.fft_window_size );
-    for ( int i = 0 , j = 0 ; i < n_sample_x ; i++, j += params.sample_per_frame ) {
+    Matrixcf fft_x(n_fft_x, params.fft_window_size );
+    for ( int i = 0 , j = 0 ; i < n_fft_x ; i++, j += params.sample_per_frame ) {
         Vectorf frame = padded_x.segment(j, params.fft_window_size).array();
         fft_x.row(i) = fft.fwd(frame);
     }
     
-    std::cout<<_kernel.row(0)<<std::endl;
-    std::cout<<fft_x.row(0)<<std::endl;
-
     Matrixcf kernel_output = _kernel * fft_x.transpose();
-    Matrixf cqt_feat = kernel_output.cwiseAbs().array();
+    Matrixf cqt_feat = kernel_output.cwiseAbs();
 
     // cqt_feat = cqt_feat.array() + 1e-9;
 
     // float ref = cqt_feat.maxCoeff();
     // cqt_feat = 20 * cqt_feat.array().max(1e-10).log10() - 20 * log10(ref);
 
-    return cqt_feat.transpose();
+    // return cqt_feat.transpose();
+    return cqt_feat;
 }
 
 void CQ::cqt_POD(float* audio, int &audio_len, float* output, int &output_len) {

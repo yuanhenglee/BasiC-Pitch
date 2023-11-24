@@ -23,24 +23,24 @@ class CQParams {
         // init params  
         int sample_rate;
         int bins_per_octave;
-        int freq_min;
-        int freq_max;
-        // int n_bins; deprecated, replaced by n_freq
-        float hop_size;
+        int n_bins; 
+        float freq_min;
+        int hop; // sample_per_frame
 
         // computed params
+        float freq_max;
         int n_freq; // n_bins
         float quality_factor;
         int fft_window_size;
-        int frame_per_second;
         int sample_per_frame;
+        int frame_per_second;
 
         CQParams(
             int sample_rate,
             int bins_per_octave,
-            int freq_min,
-            int freq_max,
-            float hop_size
+            int n_bins,
+            float freq_min,
+            int hop
         );
 };
 
