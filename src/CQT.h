@@ -50,22 +50,30 @@ class CQ {
         ~CQ();
 
         // compute cqt API for POD IO
-        void cqt_POD(float* audio, int &audio_len, float* output, int &output_len);        
+        void cqtPOD(float* audio, int &audio_len, float* output);        
 
         // compute cqt API for np.array IO
-        py::array_t<float> cqt_Py(py::array_t<float> audio);
+        py::array_t<float> cqtPy(py::array_t<float> audio);
+
+        // get the kernel matrix, just for testing
+        py::array_t<std::complex<float>> getKernel();
 
     private:
-        int _n_freq;
+        
+        // the kernel matrix
         Eigen::SparseMatrix<std::complex<float>> _kernel;
+        
         CQParams params;
+
+        // for the normalization
+        Vectorf _lengths;
+
+        // compute the kernel matrix
         void computeKernel();
+
+        // compute the cqt for input audio
         Matrixf forward( const Vectorf& x);
 };  
 
-
-
-
-py::array_t<float> constantQTransform( py::array_t<float> audio, CQParams params );
 
 #endif // CQT_H

@@ -1,14 +1,6 @@
 #include "CQT.h"
-// #include "utils.h"
-#include "Eigen/Core"
-#include "Eigen/Sparse"
-#include "unsupported/Eigen/FFT"
-#include <iostream>
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <cmath>
-#include <vector>
 
+#include <iostream>
 #include <cassert>
 
 static std::vector<float> getHammingWindow(int window_size) {
@@ -52,7 +44,8 @@ CQParams::CQParams(
 }   
 
 CQ::CQ(CQParams params) : params(params) {
-    _kernel = Eigen::SparseMatrix<std::complex<float>>(params.n_freq, params.fft_window_size);
+    // _kernel = Eigen::SparseMatrix<std::complex<float>>(params.n_freq, params.fft_window_size);
+    _kernel.resize(params.n_freq, params.fft_window_size);
     computeKernel();
 }
 
@@ -60,12 +53,20 @@ CQ::~CQ() = default;
 
 void CQ::computeKernel() {
     Matrixcf kernel = Matrixcf::Zero(params.n_freq, params.fft_window_size);
+    _lengths = Vectorf::Zero(params.n_freq);
+    
+    // Calculate the kernel for each frequency bin
     for ( int i = 0 ; i < params.n_freq ; i++ ) {
 
-        float freq = params.freq_min * pow(2.0f, i / params.bins_per_octave);
+        float freq = params.freq_min * pow(2.0f, static_cast<float>(i) / params.bins_per_octave);
+
+        _lengths[i] = ceil(params.quality_factor * params.sample_rate / freq);
+
         int window_length = 2 * round(
             params.quality_factor * params.sample_rate / freq / 2.0f
         ) + 1;
+
+
         
         Vectorcf temporal_kernel = Vectorcf::Zero(window_length);
 
@@ -76,8 +77,9 @@ void CQ::computeKernel() {
             std::complex<float> temp = std::complex<float>(
                 0.0f, 2.0f * M_PI * params.quality_factor * (j - (window_length-1)/2 ) / static_cast<float>(window_length)
             );
-            temporal_kernel[j] = std::exp(temp) * 
-                std::complex<float>(hamming_window[j] / window_length, 0.0f);
+            temporal_kernel[j] =
+                std::complex<float>(hamming_window[j] / window_length, 0.0f)
+                * std::exp(temp);
         }
 
         int pad_length = (params.fft_window_size - window_length + 1) / 2;
@@ -96,23 +98,21 @@ void CQ::computeKernel() {
     // Set small values to zero and non-small values to conjugate of itself / fft_window_size   
     for ( int i = 0 ; i < params.n_freq ; i++ ) {
         for ( int j = 0 ; j < params.fft_window_size ; j++ ) {
-            if ( kernel.cwiseAbs().array()(i, j) < 0.01 ) {
+            if ( kernel.cwiseAbs().array()(i, j) < 1e-1 ) {
                 // do nothing
                 ;
             }
             else {
-                tripletList.push_back(Eigen::Triplet<std::complex<float>>(i, j,
+                tripletList.emplace_back(
+                    Eigen::Triplet<std::complex<float>>(i, j,
                     std::complex<float>(1.0f/params.fft_window_size, 0.0f) *
                     conj(kernel(i, j))
                 ));
             }
         }
     }
-    _kernel.resize(params.n_freq, params.fft_window_size);
     _kernel.setFromTriplets(tripletList.begin(), tripletList.end());
     _kernel.makeCompressed();
-
-    // std::cout<<_kernel<<std::endl;
 }
 
 Matrixf CQ::forward( const Vectorf &x ) {
@@ -135,47 +135,60 @@ Matrixf CQ::forward( const Vectorf &x ) {
     Matrixcf kernel_output = _kernel * fft_x.transpose();
     Matrixf cqt_feat = kernel_output.cwiseAbs();
 
-    // cqt_feat = cqt_feat.array() + 1e-9;
+    // librosa style normalization
+    // cqt_feat *= tf.math.sqrt(tf.cast(self.lengths.reshape((-1, 1, 1)), self.dtype))
+    // cqt_feat = cqt_feat.array().colwise() * _lengths.transpose().array().sqrt();
 
-    // float ref = cqt_feat.maxCoeff();
-    // cqt_feat = 20 * cqt_feat.array().max(1e-10).log10() - 20 * log10(ref);
-
-    // return cqt_feat.transpose();
     return cqt_feat;
 }
 
-void CQ::cqt_POD(float* audio, int &audio_len, float* output, int &output_len) {
+void CQ::cqtPOD(float* audio, int &audio_len, float* output) {
 
     Eigen::VectorXf x = Eigen::Map<Eigen::VectorXf>(audio, audio_len);
     Eigen::MatrixXf cqt_feat = forward(x);
 
-    output = new float[cqt_feat.rows() * cqt_feat.cols()];
+    assert(cqt_feat.rows() == params.n_freq && "CQT feature rows not equal to n_freq");
 
-    output_len = 0;
     for ( int i = 0 ; i < cqt_feat.rows() ; i++ ) {
         for ( int j = 0 ; j < cqt_feat.cols() ; j++ ) {
-            output[output_len++] = cqt_feat(i, j);
+            output[i * cqt_feat.cols() + j] = cqt_feat.coeff(i, j);
         }
     }
 }
 
-py::array_t<float> CQ::cqt_Py(py::array_t<float> audio) {
+py::array_t<float> CQ::cqtPy(py::array_t<float> audio) {
     // NOTE : input audio should be 1D array at this point
     py::buffer_info buf = audio.request();
-    int audio_len = buf.shape[0];  
+    int audio_len = buf.shape[0];
 
-    float* res_ptr;
-    int res_len;
-    cqt_POD((float*)buf.ptr, audio_len, res_ptr, res_len);
+    Eigen::VectorXf x = Eigen::Map<Eigen::VectorXf>((float*)buf.ptr, audio_len);
+    Eigen::MatrixXf cqt_feat = forward(x);
 
-    
-    py::array_t<float> result = py::array_t<float>(
-        {res_len}, // shape
-        {sizeof(float)}, // C-style contiguous strides for double
-        res_ptr // the data pointer
+    int n_fft_x = audio_len / params.hop;
+    py::array_t<float> result = py::array_t<float>({params.n_freq, n_fft_x});
+    auto r = result.mutable_unchecked<2>();
+    for ( int i = 0 ; i < params.n_freq ; i++ ) {
+        for ( int j = 0 ; j < n_fft_x ; j++ ) {
+            r(i, j) = cqt_feat.coeff(i, j);
+        }
+    }
+
+    return result;
+}
+
+
+py::array_t<std::complex<float>> CQ::getKernel() {
+    py::array_t<std::complex<float>> result = py::array_t<std::complex<float>, py::array::c_style>(
+        {_kernel.rows(), _kernel.cols()}
     );
+    py::buffer_info buf = result.request();
+    std::complex<float>* res_ptr = (std::complex<float>*)buf.ptr;
 
-    result.resize({params.n_freq, res_len / params.n_freq});
+    for ( int i = 0 ; i < _kernel.rows() ; i++ ) {
+        for ( int j = 0 ; j < _kernel.cols() ; j++ ) {
+            res_ptr[i * _kernel.cols() + j] = _kernel.coeff(i, j);
+        }
+    }
 
     return result;
 }
