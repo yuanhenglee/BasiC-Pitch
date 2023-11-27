@@ -59,6 +59,9 @@ class CQ {
         // compute cqt API for Eigen IO
         Matrixf cqtEigen(const Vectorf& x);
 
+        // Return the cqt feature with harmonic stacking
+        Matrixf cqtEigenHarmonic(const Vectorf& x);
+
         // get the kernel matrix, just for testing
         py::array_t<std::complex<float>> getKernel();
 

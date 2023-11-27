@@ -10,11 +10,11 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
 
     py::class_<CQParams>(m, "CQParams")
         .def(py::init<int, int, int, float, int>(),
-            py::arg("sample_rate") = DEFAULT_SAMPLE_RATE,
-            py::arg("bins_per_octave") = DEFAULT_BINS_PER_OCTAVE,
-            py::arg("n_bins") = DEFAULT_N_BINS,
-            py::arg("freq_min") = DEFAULT_MIN_FREQ,
-            py::arg("hop") = DEFAULT_HOP
+            py::arg("sample_rate") = SAMPLE_RATE,
+            py::arg("bins_per_octave") = SEMITON_PER_OCTAVE,
+            py::arg("n_bins") = ANNOTATIONS_N_SEMITONES,
+            py::arg("freq_min") = MIN_FREQ,
+            py::arg("hop") = FFT_HOP
         )
         .def("__repr__",
         [] (const CQParams &params) {
@@ -34,7 +34,8 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
     py::class_<CQ>(m, "CQ")
         .def(py::init<CQParams>(), py::arg("params"))
         // .def("computeCQT", &CQ::cqtPy)
-        .def("computeCQT", &CQ::cqtEigen)
+        // .def("computeCQT", &CQ::cqtEigen)
+        .def("computeCQT", &CQ::cqtEigenHarmonic)
         .def("getKernel", &CQ::getKernel);
 
 }

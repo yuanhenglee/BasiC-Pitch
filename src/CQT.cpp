@@ -182,6 +182,14 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
     return cqt_feat;
 }
 
+Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
+
+    Eigen::MatrixXf cqt_feat = forward(audio);
+    // TODO : implement harmonic stacking
+    
+    return cqt_feat;
+}
+
 
 py::array_t<std::complex<float>> CQ::getKernel() {
     py::array_t<std::complex<float>> result = py::array_t<std::complex<float>, py::array::c_style>(
