@@ -1,8 +1,17 @@
+# redundant files
+.vscode/
+.pytest_cache/
+tests/.pytest_cache/
+
 # lib folder
 lib/
 
 # build folder
 build/
+
+# external libraries
+src/ext/eigen-3.3.7/
+src/ext/fftw-3.3.10/
 
 # Prerequisites
 *.d

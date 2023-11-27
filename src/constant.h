@@ -1,0 +1,14 @@
+#ifndef CONSTANT_H
+#define CONSTANT_H
+
+#define DEFAULT_SAMPLE_RATE 22050
+
+#define DEFAULT_BINS_PER_OCTAVE 12
+
+#define DEFAULT_N_BINS 88
+
+#define DEFAULT_MIN_FREQ 27.5
+
+#define DEFAULT_HOP 256
+
+#endif // CONSTANT_H
