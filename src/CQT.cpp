@@ -1,95 +1,110 @@
 #include "CQT.h"
+#include "constant.h"
 
 #include <iostream>
 #include <cassert>
+#include <cmath>
 #include <chrono>
 
-static std::vector<float> getHammingWindow(int window_size) {
-    std::vector<float> window(window_size);
+Vectorcf getHamming(int window_size) {
+    Vectorcf window(window_size);
     for ( int i = 0 ; i < window_size ; i++ ) {
-        window[i] = 0.54f - 0.46f * cos(2.0f * M_PI * i / (window_size - 1));
+        window[i] = std::complex<float>(
+            0.54f - 0.46f * cos(2.0f * M_PI * i / (window_size - 1)), 0.0f
+        );
     }
     return window;
 }
 
-CQParams::CQParams(
-    int sample_rate,
-    int bins_per_octave,
-    int n_bins,
-    float freq_min,
-    int hop
-)
-    : sample_rate(sample_rate), bins_per_octave(bins_per_octave), freq_min(freq_min), hop(hop) {  
+Vectorcf getHann(int window_size) {
+    Vectorcf window(window_size);
+    for ( int i = 0 ; i < window_size ; i++ ) {
+        window[i] = std::complex<float>(
+            0.5f * (1.0f - cos(2.0f * M_PI * i / (window_size - 1))), 0.0f
+        );
+    }
+    return window;
+}
+
+CQParams::CQParams( bool contour ) {
+    sample_rate = SAMPLE_RATE;
+    bins_per_octave = SEMITON_PER_OCTAVE * 
+        (contour ? CONTOURS_BINS_PER_SEMITONE : NOTES_BINS_PER_SEMITONE);
+    n_bins = N_SEMITONES * 
+        (contour ? CONTOURS_BINS_PER_SEMITONE : NOTES_BINS_PER_SEMITONE);
+    freq_min = MIN_FREQ;
+    sample_per_frame = FFT_HOP;
+ 
+
+    n_octaves = static_cast<int>(ceil(static_cast<float>(n_bins) / bins_per_octave));
+    fmin_t = freq_min * pow(2.0f, n_octaves - 1.0f);
+    if ( n_bins % bins_per_octave == 0 ) {
+        fmax_t = fmin_t * pow(2.0f, 1.0f - 1.0f/ bins_per_octave);
+    }
+    else {
+        fmax_t = fmin_t * pow(2.0f, static_cast<float>(n_bins % bins_per_octave - 1.0f) / bins_per_octave);
+    }
+    fmin_t = fmax_t / pow(2.0f, 1 - 1.0f / bins_per_octave);
 
     freq_max = freq_min * pow(2.0f, static_cast<float>(n_bins-1) / bins_per_octave);
-    n_freq = n_bins;
     quality_factor = 1.0f / (pow(2.0f, 1.0f / bins_per_octave) - 1.0f);
     fft_window_size = static_cast<int>(pow(2.0f, 
         ceil(
-            log2(quality_factor * sample_rate / freq_min) + 1e-6
+            log2(quality_factor * sample_rate / fmin_t) + 1e-6
         )));
-    // frame_per_second = static_cast<int>(1 / hop_size);
-    // sample_per_frame = round(static_cast<float>(sample_rate) / frame_per_second);
-    sample_per_frame = hop;
     frame_per_second = static_cast<int>(static_cast<float>(sample_rate) / sample_per_frame);
-}   
+}
 
 CQ::CQ(CQParams params) : params(params) {
-    // _kernel = Eigen::SparseMatrix<std::complex<float>>(params.n_freq, params.fft_window_size);
-    _kernel.resize(params.n_freq, params.fft_window_size);
     computeKernel();
 }
 
 CQ::~CQ() = default;
 
 void CQ::computeKernel() {
-    Matrixcf kernel = Matrixcf::Zero(params.n_freq, params.fft_window_size);
-    _lengths = Vectorf::Zero(params.n_freq);
+    int _n_bins = std::min(params.bins_per_octave, params.n_bins);
+    Matrixcf kernel = Matrixcf::Zero(_n_bins, params.fft_window_size);
+    _lengths = Vectorf::Zero(_n_bins);
     
+    Eigen::FFT<float> fft;
+
     // Calculate the kernel for each frequency bin
-    for ( int i = 0 ; i < params.n_freq ; i++ ) {
+    for ( int i = 0 ; i < _n_bins ; i++ ) {
 
-        float freq = params.freq_min * pow(2.0f, static_cast<float>(i) / params.bins_per_octave);
+        float freq = params.fmin_t * pow(2.0f, static_cast<float>(i) / params.bins_per_octave);
 
-        _lengths[i] = ceil(params.quality_factor * params.sample_rate / freq);
-
-        int window_length = 2 * round(
-            params.quality_factor * params.sample_rate / freq / 2.0f
-        ) + 1;
-
-
+        int _l = ceil(params.quality_factor * params.sample_rate / freq);
+        _lengths[i] = _l;
         
-        Vectorcf temporal_kernel = Vectorcf::Zero(window_length);
+        int start = static_cast<int>(ceil( params.fft_window_size / 2.0f - _l / 2.0f)) - (_l%2);
+        
+        Vectorcf temporal_kernel = Vectorcf::Zero(_l);
 
-        std::vector<float> hamming_window = getHammingWindow(window_length);
-        // std::vector<float> arange_window = getArangeWindow(window_length);
+        Vectorcf fft_window = getHann(_l);
 
-        for ( int j = 0 ; j < window_length ; j++ ) {
+        for ( int j = 0 ; j < _l ; j++ ) {
+            temporal_kernel[j] = fft_window[j];
             std::complex<float> temp = std::complex<float>(
-                0.0f, 2.0f * M_PI * params.quality_factor * (j - (window_length-1)/2 ) / static_cast<float>(window_length)
+                0.0f, 2.0f * M_PI * (j - (_l-1)/2 ) * freq / params.sample_rate
             );
-            temporal_kernel[j] =
-                std::complex<float>(hamming_window[j] / window_length, 0.0f)
-                * std::exp(temp);
+            temporal_kernel[j] *= std::exp(temp);
+            temporal_kernel[j] /= _l;
         }
 
-        int pad_length = (params.fft_window_size - window_length + 1) / 2;
-
-        kernel.block(i, pad_length, 1, window_length) = temporal_kernel;
+        kernel.block(i, start, 1, _l) = temporal_kernel;
     }
 
-    Eigen::FFT<float> fft;
-    for ( int i = 0 ; i < params.n_freq ; i++ ) {
-        Vectorcf temp = kernel.row(i).array();
-        kernel.row(i) = fft.fwd(temp);
-    }
+    // for ( int i = 0 ; i < _n_bins ; i++ ) {
+    //     Vectorcf temp = kernel.row(i).array();
+    //     kernel.row(i) = fft.fwd(temp);
+    // }
 
     std::vector<Eigen::Triplet<std::complex<float>>> tripletList;
 
     // Set small values to zero and non-small values to conjugate of itself / fft_window_size   
-    for ( int i = 0 ; i < params.n_freq ; i++ ) {
+    for ( int i = 0 ; i < _n_bins ; i++ ) {
         for ( int j = 0 ; j < params.fft_window_size ; j++ ) {
-            if ( kernel.cwiseAbs().array()(i, j) < 1e-1 ) {
+            if ( kernel.cwiseAbs().array()(i, j) < 0 ) {
                 // do nothing
                 ;
             }
@@ -102,6 +117,7 @@ void CQ::computeKernel() {
             }
         }
     }
+    _kernel.resize(_n_bins, params.fft_window_size);
     _kernel.setFromTriplets(tripletList.begin(), tripletList.end());
     _kernel.makeCompressed();
 }
@@ -133,40 +149,6 @@ Matrixf CQ::forward( const Vectorf &x ) {
     return cqt_feat;
 }
 
-void CQ::cqtPOD(float* audio, int &audio_len, float* output) {
-
-    Eigen::VectorXf x = Eigen::Map<Eigen::VectorXf>(audio, audio_len);
-    Eigen::MatrixXf cqt_feat = forward(x);
-
-    assert(cqt_feat.rows() == params.n_freq && "CQT feature rows not equal to n_freq");
-
-    for ( int i = 0 ; i < cqt_feat.rows() ; i++ ) {
-        for ( int j = 0 ; j < cqt_feat.cols() ; j++ ) {
-            output[i * cqt_feat.cols() + j] = cqt_feat.coeff(i, j);
-        }
-    }
-}
-
-py::array_t<float> CQ::cqtPy(py::array_t<float> audio) {
-    // NOTE : input audio should be 1D array at this point
-    py::buffer_info buf = audio.request();
-    int audio_len = buf.shape[0];
-
-    Eigen::VectorXf x = Eigen::Map<Eigen::VectorXf>((float*)buf.ptr, audio_len);
-    Eigen::MatrixXf cqt_feat = forward(x);
-
-    int n_fft_x = audio_len / params.hop;
-    py::array_t<float> result = py::array_t<float>({params.n_freq, n_fft_x});
-    auto r = result.mutable_unchecked<2>();
-    for ( int i = 0 ; i < params.n_freq ; i++ ) {
-        for ( int j = 0 ; j < n_fft_x ; j++ ) {
-            r(i, j) = cqt_feat.coeff(i, j);
-        }
-    }
-
-    return result;
-}
-
 Matrixf CQ::cqtEigen(const Vectorf& audio) {
     // NOTE : input audio should be 1D array at this point
     
@@ -184,9 +166,8 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
 
 Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
 
-    Eigen::MatrixXf cqt_feat = forward(audio);
-    // TODO : implement harmonic stacking
-    
+    Matrixf cqt_feat = forward(audio);
+
     return cqt_feat;
 }
 

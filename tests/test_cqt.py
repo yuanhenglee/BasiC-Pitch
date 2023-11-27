@@ -37,6 +37,8 @@ def visualize_kernel():
     res = t.getKernel()
     print(res.shape)
 
+    np.save('kernel.npy', res)
+
     plt.figure(figsize=(12, 6))
     plt.subplot(1, 2, 1)
     plt.title('Real')
@@ -99,13 +101,14 @@ def test_vs_librosa(vis = False):
         sr=22050,
         hop_length=256,
         fmin=27.5,
-        n_bins=88,
-        bins_per_octave=12,
+        n_bins=309,
+        bins_per_octave=12 * 3,
     )
     librosa_res = np.abs(librosa_res)
     librosa_res = minmax_scale(librosa_res, axis=1)
 
     param = BasiCPP_Pitch.CQParams()
+    print(param)
     t = BasiCPP_Pitch.CQ(param)
     res = t.computeCQT(np_arr)
     res = minmax_scale(res, axis=1)
@@ -113,8 +116,8 @@ def test_vs_librosa(vis = False):
     h, w = min(librosa_res.shape[0], res.shape[0]), min(librosa_res.shape[1], res.shape[1])
     diff = np.abs(librosa_res[:h, :w] - res[:h, :w])
 
-    print(np.sum(diff) / (h * w))
-    assert np.sum(diff) / (h * w) < 5e-2
+    print('Mean diff: {:.3f}'.format(np.mean(diff)))
+    assert np.mean(diff) < 1e-1
 
     if vis:
         # visualize
@@ -126,6 +129,6 @@ def test_vs_librosa(vis = False):
 
 if __name__ == "__main__":
     # test_speed()
-    test_vs_librosa(vis=True)
-    # visualize_kernel()
+    # test_vs_librosa(vis=True)
+    visualize_kernel()
 

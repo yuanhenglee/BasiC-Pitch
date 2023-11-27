@@ -22,39 +22,36 @@ namespace py = pybind11;
 class CQParams {
     public:
         // init params  
-        int sample_rate;
+        int sample_rate; // == sr in basic_pitch
         int bins_per_octave;
         int n_bins; 
-        float freq_min;
-        int hop; // sample_per_frame
+        float freq_min; // == fmin in basic_pitch
+        int sample_per_frame; // == hop_length in basic_pitch
 
         // computed params
-        float freq_max;
-        int n_freq; // n_bins
-        float quality_factor;
-        int fft_window_size;
-        int sample_per_frame;
+        float freq_max; // == fmax in basic_pitch
+        float quality_factor; // == Q in basic_pitch
+        int fft_window_size; // 
         int frame_per_second;
+        int n_octaves; // == n_octaves in basic_pitch
+        float fmin_t; // == fmin_t in basic_pitch, lowest frequency bin for the top octave kernel
+        float fmax_t; // == fmax_t in basic_pitch
 
-        CQParams(
-            int sample_rate,
-            int bins_per_octave,
-            int n_bins,
-            float freq_min,
-            int hop
-        );
+        CQParams( bool contour );
+
+//         CQParams(
+//             int sample_rate,
+//             int bins_per_octave,
+//             int n_bins,
+//             float freq_min,
+//             int hop
+//         );
 };
 
 class CQ {
     public:
         CQ(CQParams params);
         ~CQ();
-
-        // compute cqt API for POD IO
-        void cqtPOD(float* audio, int &audio_len, float* output);        
-
-        // compute cqt API for np.array IO
-        py::array_t<float> cqtPy(py::array_t<float> audio);
 
         // compute cqt API for Eigen IO
         Matrixf cqtEigen(const Vectorf& x);
