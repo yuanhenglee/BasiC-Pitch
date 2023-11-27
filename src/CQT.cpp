@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <chrono>
 
 static std::vector<float> getHammingWindow(int window_size) {
     std::vector<float> window(window_size);
@@ -10,16 +11,6 @@ static std::vector<float> getHammingWindow(int window_size) {
     }
     return window;
 }
-
-// static std::vector<float> getArangeWindow(int window_size) {
-//     int start = -(window_size - 1) / 2, end = (window_size - 1) / 2;
-//     std::vector<float> window;
-//     window.reserve(window_size);
-//     for ( int i = start ; i <= end ; i++ ) {
-//         window.push_back(i);
-//     }
-//     return window;
-// }
 
 CQParams::CQParams(
     int sample_rate,
@@ -174,6 +165,21 @@ py::array_t<float> CQ::cqtPy(py::array_t<float> audio) {
     }
 
     return result;
+}
+
+Matrixf CQ::cqtEigen(const Vectorf& audio) {
+    // NOTE : input audio should be 1D array at this point
+    
+    // log wall time
+    // auto start = std::chrono::high_resolution_clock::now();
+
+    Eigen::MatrixXf cqt_feat = forward(audio);
+
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::cout<< "cqt run time"<< 
+    //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+    //     << std::endl; 
+    return cqt_feat;
 }
 
 

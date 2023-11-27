@@ -6,6 +6,7 @@
 #include "unsupported/Eigen/FFT"
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/eigen.h>
 #include <cmath>
 
 typedef Eigen::Matrix<float, 1, Eigen::Dynamic, Eigen::RowMajor> Vectorf;
@@ -54,6 +55,9 @@ class CQ {
 
         // compute cqt API for np.array IO
         py::array_t<float> cqtPy(py::array_t<float> audio);
+
+        // compute cqt API for Eigen IO
+        Matrixf cqtEigen(const Vectorf& x);
 
         // get the kernel matrix, just for testing
         py::array_t<std::complex<float>> getKernel();

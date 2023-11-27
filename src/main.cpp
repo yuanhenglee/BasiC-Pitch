@@ -33,13 +33,8 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
         });
     py::class_<CQ>(m, "CQ")
         .def(py::init<CQParams>(), py::arg("params"))
-        .def("computeCQT", &CQ::cqtPy)
+        // .def("computeCQT", &CQ::cqtPy)
+        .def("computeCQT", &CQ::cqtEigen)
         .def("getKernel", &CQ::getKernel);
-
-    // m.attr("redirect_output") = py::capsule(
-    //     new py::scoped_output_redirect(...), [](void *sor) {
-    //         delete static_cast<py::scoped_output_redirect *>(sor);
-    //     }
-    // );
 
 }

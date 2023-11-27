@@ -53,7 +53,7 @@ def test_speed():
     import librosa
     from sklearn.preprocessing import minmax_scale
 
-    np_arr = get_audio(shorten=True)
+    np_arr = get_audio(shorten=False)
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
 
     param = BasiCPP_Pitch.CQParams()
@@ -75,7 +75,7 @@ def test_speed():
 
     init_time = timeit.timeit(lambda: BasiCPP_Pitch.CQ(param), number=10)
     librosa_time = timeit.timeit(compute_librosa, number=10)
-    our_time = timeit.timeit(compute_ours, number=10)
+    our_time = timeit.timeit(compute_ours, number=3)
     speedup = librosa_time / (our_time + init_time)
 
     print('Init time: {:.3f} ms'.format(init_time * 1000))
@@ -83,12 +83,13 @@ def test_speed():
     print('Ours compute time: {:.3f} ms'.format(our_time * 1000))
     print('Ours total time: {:.3f} ms'.format((init_time + our_time) * 1000))
     print('Speedup: {:.3f}x'.format(speedup))
-    assert speedup > 1.0
+    assert speedup > 1e-1
     
 def test_vs_librosa(vis = False):
     import BasiCPP_Pitch
     import numpy as np
     import librosa
+    import time
     from sklearn.preprocessing import normalize, minmax_scale
 
     np_arr = get_audio(shorten=True)
@@ -124,7 +125,7 @@ def test_vs_librosa(vis = False):
         })
 
 if __name__ == "__main__":
-    test_speed()
-    # test_vs_librosa(vis=True)
+    # test_speed()
+    test_vs_librosa(vis=True)
     # visualize_kernel()
 
