@@ -2,12 +2,21 @@
 #include <pybind11/numpy.h>
 #include "CQT.h"
 #include "constant.h"
+#include "utils.h"
 
-PYBIND11_MODULE(BasiCPP_Pitch, m) {
-    // py::class<BasiCPP_Pitch>(m, "BasiCPP_Pitch")
-    //     .def(py::init<>())
-    //     .def("transcribeAudio", &BasiCPP_Pitch::transcribeAudio);
 
+// bind the utils functions
+void bind_utils( py::module &m ) {
+    // m.def("printMat", &printMat);
+    m.def("getHamming", &getHamming);
+    m.def("getHann", &getHann);
+    m.def("updateEDParams", &updateEDParams);
+    m.def("createLowPassFilter", &defaultLowPassFilter);
+    m.def("downsamplingByN", &downsamplingByN);
+}
+
+// bind the CQParams class
+void bind_CQParams( py::module &m ) {
     py::class_<CQParams>(m, "CQParams")
         .def(py::init<bool>(), py::arg("contour") = true)
         .def("__repr__",
@@ -25,13 +34,23 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
                 "n_octaves: " + std::to_string(params.n_octaves) + "\n"
                 "fmin_t: " + std::to_string(params.fmin_t) + "\n"
                 "fmax_t: " + std::to_string(params.fmax_t) + "\n"
+                "downsample_factor: " + std::to_string(params.downsample_factor) + "\n"
                 ">";
         });
+}
+
+// bind the CQ class
+void bind_CQ( py::module &m ) {
     py::class_<CQ>(m, "CQ")
         .def(py::init<CQParams>(), py::arg("params"))
-        // .def("computeCQT", &CQ::cqtPy)
-        // .def("computeCQT", &CQ::cqtEigen)
-        .def("computeCQT", &CQ::cqtEigenHarmonic)
-        .def("getKernel", &CQ::getKernel);
+        .def("computeCQT", &CQ::cqtEigen)
+        .def("getKernel", &CQ::getKernel)
+        .def("harmonicStacking", &CQ::cqtEigenHarmonic);
+}
 
+PYBIND11_MODULE(BasiCPP_Pitch, m) {
+    m.doc() = "BasiCPP_Pitch: A C++ implementation of the pitch detection algorithm";
+    bind_utils(m);
+    bind_CQParams(m);
+    bind_CQ(m);
 }

@@ -1,30 +1,11 @@
 #include "CQT.h"
 #include "constant.h"
+#include "utils.h"
 
 #include <iostream>
 #include <cassert>
 #include <cmath>
 #include <chrono>
-
-Vectorcf getHamming(int window_size) {
-    Vectorcf window(window_size);
-    for ( int i = 0 ; i < window_size ; i++ ) {
-        window[i] = std::complex<float>(
-            0.54f - 0.46f * cos(2.0f * M_PI * i / (window_size - 1)), 0.0f
-        );
-    }
-    return window;
-}
-
-Vectorcf getHann(int window_size) {
-    Vectorcf window(window_size);
-    for ( int i = 0 ; i < window_size ; i++ ) {
-        window[i] = std::complex<float>(
-            0.5f * (1.0f - cos(2.0f * M_PI * i / (window_size - 1))), 0.0f
-        );
-    }
-    return window;
-}
 
 CQParams::CQParams( bool contour ) {
     sample_rate = SAMPLE_RATE;
@@ -56,19 +37,32 @@ CQParams::CQParams( bool contour ) {
 }
 
 CQ::CQ(CQParams params) : params(params) {
-    computeKernel();
+    // computeKernel();
+    
+    // Compute the length of the kernels for later normalization
+    int _n_bins = params.n_bins;
+    _lengths = Vectorcf::Zero(_n_bins);
+    for ( int i = 0 ; i < _n_bins ; i++ ) {
+        float freq = params.freq_min * pow(2.0f, static_cast<float>(i) / params.bins_per_octave);
+        float _l = ceil(params.quality_factor * params.sample_rate / freq);
+        std::complex<float> _l_sqrt_complex = std::complex<float>(sqrt(_l), 0.0f);
+        _lengths[i] = _l_sqrt_complex;
+    }
+
+    loadDefaultKernel(_kernel);
 }
 
 CQ::~CQ() = default;
 
+// decrepated, load precomputed kernel instead
 void CQ::computeKernel() {
     int _n_bins = std::min(params.bins_per_octave, params.n_bins);
-    Matrixcf kernel = Matrixcf::Zero(_n_bins, params.fft_window_size);
+    _kernel = Matrixcf::Zero(_n_bins, params.fft_window_size);
     _lengths = Vectorf::Zero(_n_bins);
     
     Eigen::FFT<float> fft;
 
-    // Calculate the kernel for each frequency bin
+    // Calculate the _kernel for each frequency bin
     for ( int i = 0 ; i < _n_bins ; i++ ) {
 
         float freq = params.fmin_t * pow(2.0f, static_cast<float>(i) / params.bins_per_octave);
@@ -91,99 +85,132 @@ void CQ::computeKernel() {
             temporal_kernel[j] /= _l;
         }
 
-        kernel.block(i, start, 1, _l) = temporal_kernel;
+        _kernel.block(i, start, 1, _l) = temporal_kernel;
     }
 
-    // for ( int i = 0 ; i < _n_bins ; i++ ) {
-    //     Vectorcf temp = kernel.row(i).array();
-    //     kernel.row(i) = fft.fwd(temp);
+    for ( int i = 0 ; i < _n_bins ; i++ ) {
+        Vectorcf temp = _kernel.row(i).array();
+        _kernel.row(i) = fft.fwd(temp);
+    }
+}
+
+Matrixcf CQ::forward( const Vectorf &x, int hop_length ) {
+
+    // due to the reflection padding, the output size plus 1
+    int n_fft_x = x.size() / hop_length + 1;
+    Vectorf padded_x = reflectionPadding(x, params.fft_window_size / 2);
+    Matrixcf cqt_feat = Matrixcf::Zero(n_fft_x, _kernel.rows());
+
+    for ( int i = 0 ; i < n_fft_x ; i++ ) {
+        int start = i * hop_length;
+        Vectorcf temp = padded_x.segment(start, params.fft_window_size).cast<std::complex<float>>();
+        cqt_feat.row(i) = temp * _kernel.transpose();
+    }
+
+    return cqt_feat.transpose();
+}
+
+// std::vector<Matrixf>
+py::array_t<float>
+CQ::harmonicStacking(const Matrixcf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
+    
+    // std::vector<Matrixf> stacking_features(harmonics.size(), Matrixf::Zero(cqt.rows(), cqt.cols()));
+
+    // n_output_freqs = std::min(n_output_freqs, static_cast<int>(cqt.rows()));
+
+    std::vector<size_t> shape = {
+        harmonics.size(),
+        static_cast<unsigned long>(n_output_freqs),
+        static_cast<unsigned long>(cqt.cols())
+    };
+    py::array_t<float> result(shape);
+    // py::buffer_info buf = result.request();
+    // float* res_ptr = (float*)buf.ptr;
+    // int n_bins = cqt.rows(), n_frames = cqt.cols();
+
+    // for ( size_t i = 0 ; i < harmonics.size() ; i++ ) {
+        
+    //     Matrixf padded = Matrixf::Zero(n_bins, n_frames);
+    //     int shift = static_cast<int>(round(12.0f * bins_per_semitone * log2(harmonics[i])));
+
+    //     if (shift == 0)
+    //         padded = cqt;
+    //     else if (shift > 0) {
+    //         padded.block(0, 0, n_bins - shift, n_frames) = cqt.block(shift, 0, n_bins - shift, n_frames);
+    //     }
+    //     else {
+    //         padded.block(-shift, 0, n_bins + shift, n_frames) = cqt.block(0, 0, n_bins + shift, n_frames);
+    //     }
+
+    //     for ( size_t j = 0 ; j < static_cast<size_t>(n_output_freqs) ; j++ ) {
+    //         for ( size_t k = 0 ; k < static_cast<size_t>(n_frames) ; k++ ) {
+    //             res_ptr[i * n_output_freqs * n_frames + j * n_frames + k] = padded(j, k);
+    //         }
+    //     }
+
     // }
 
-    std::vector<Eigen::Triplet<std::complex<float>>> tripletList;
-
-    // Set small values to zero and non-small values to conjugate of itself / fft_window_size   
-    for ( int i = 0 ; i < _n_bins ; i++ ) {
-        for ( int j = 0 ; j < params.fft_window_size ; j++ ) {
-            if ( kernel.cwiseAbs().array()(i, j) < 0 ) {
-                // do nothing
-                ;
-            }
-            else {
-                tripletList.emplace_back(
-                    Eigen::Triplet<std::complex<float>>(i, j,
-                    std::complex<float>(1.0f/params.fft_window_size, 0.0f) *
-                    conj(kernel(i, j))
-                ));
-            }
-        }
-    }
-    _kernel.resize(_n_bins, params.fft_window_size);
-    _kernel.setFromTriplets(tripletList.begin(), tripletList.end());
-    _kernel.makeCompressed();
+    return result;
 }
 
-Matrixf CQ::forward( const Vectorf &x ) {
-    // number of fft windows we can do is the number of frames we can divide from x plus 1
-    int n_fft_x = x.size() / params.sample_per_frame;
-    assert(n_fft_x > 0 && "Input signal is too short");
-    int left = ceil((params.fft_window_size - params.sample_per_frame) / 2.0f);
-    int right = floor((params.fft_window_size - params.sample_per_frame) / 2.0f);
-
-    Vectorf padded_x = Vectorf::Zero(left + x.size() + right);
-    padded_x.segment(left, x.size()) = x;
-
-    Eigen::FFT<float> fft;
-    Matrixcf fft_x(n_fft_x, params.fft_window_size );
-    for ( int i = 0 , j = 0 ; i < n_fft_x ; i++, j += params.sample_per_frame ) {
-        Vectorf frame = padded_x.segment(j, params.fft_window_size).array();
-        fft_x.row(i) = fft.fwd(frame);
-    }
-    
-    Matrixcf kernel_output = _kernel * fft_x.transpose();
-    Matrixf cqt_feat = kernel_output.cwiseAbs();
-
-    // librosa style normalization
-    // cqt_feat *= tf.math.sqrt(tf.cast(self.lengths.reshape((-1, 1, 1)), self.dtype))
-    // cqt_feat = cqt_feat.array().colwise() * _lengths.transpose().array().sqrt();
-
-    return cqt_feat;
-}
 
 Matrixf CQ::cqtEigen(const Vectorf& audio) {
     // NOTE : input audio should be 1D array at this point
-    
-    // log wall time
-    // auto start = std::chrono::high_resolution_clock::now();
+    int hop = params.sample_per_frame;
+    int n_fft_x = audio.size() / hop + 1;
+    int _n_bins = _kernel.rows();
 
-    Eigen::MatrixXf cqt_feat = forward(audio);
+    Matrixcf cqt_feat(params.n_bins, n_fft_x );
 
-    // auto end = std::chrono::high_resolution_clock::now();
-    // std::cout<< "cqt run time"<< 
-    //     std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-    //     << std::endl; 
-    return cqt_feat;
-}
+    // Getting the top octave CQT
+    int start = params.n_bins - _n_bins;
+    cqt_feat.block(start , 0, _n_bins, n_fft_x) = forward(audio, hop);
 
-Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
+    Vectorf audio_down = audio;
 
-    Matrixf cqt_feat = forward(audio);
+    Vectorf filter_kernel = defaultLowPassFilter();
 
-    return cqt_feat;
-}
-
-
-py::array_t<std::complex<float>> CQ::getKernel() {
-    py::array_t<std::complex<float>> result = py::array_t<std::complex<float>, py::array::c_style>(
-        {_kernel.rows(), _kernel.cols()}
-    );
-    py::buffer_info buf = result.request();
-    std::complex<float>* res_ptr = (std::complex<float>*)buf.ptr;
-
-    for ( int i = 0 ; i < _kernel.rows() ; i++ ) {
-        for ( int j = 0 ; j < _kernel.cols() ; j++ ) {
-            res_ptr[i * _kernel.cols() + j] = _kernel.coeff(i, j);
-        }
+    for ( int i = 1 ; i < params.n_octaves ; i++ ) {
+        start -= _n_bins;
+        hop /= 2;
+        audio_down = downsamplingByN(audio_down, filter_kernel, 2.0f);
+        if (start >= 0)
+            cqt_feat.block(start, 0, _n_bins, n_fft_x) = forward(audio_down, hop);
+        else
+            cqt_feat.block(0, 0, _n_bins + start, n_fft_x) = forward(audio_down, hop).block(-start, 0, _n_bins + start, n_fft_x);
     }
 
-    return result;
+    // normalization
+    // top_cqt_feat *= params.downsample_factor; // we don't need this since the factor is 1
+    // librosa fasion normalization
+    cqt_feat = cqt_feat.array() * _lengths.transpose().array().replicate(1, n_fft_x);
+
+    // store only the magnitude
+    Matrixf res = cqt_feat.cwiseAbs();
+
+    return res;
+}
+
+// Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
+py::array_t<float> CQ::cqtEigenHarmonic(const Vectorf& audio) {
+
+    Matrixcf cqt_feat = forward(audio, params.sample_per_frame);
+
+    // std::vector<float> harmonics = {0.5};
+    // for ( int i = 1 ; i < N_HARMONICS ; i++ ) {
+    //     harmonics.emplace_back(i);
+    // }
+
+    // return harmonicStacking(
+    //     cqt_feat,
+    //     CONTOURS_BINS_PER_SEMITONE,
+    //     harmonics,
+    //     N_BINS_CONTOUR
+    // );
+    return py::array_t<float>();
+}
+
+
+Matrixcf CQ::getKernel() {
+    return _kernel;
 }
