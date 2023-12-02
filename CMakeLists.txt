@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.12)
 project(BasiCPP_Pitch VERSION 1.0)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Global settings
-set(LDFLAGS "-O3 -fopenmp -Wall")
+set(LDFLAGS "-Ofast -fopenmp -fno-math-errno -march=native -DNDEBUG -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
 
 # fftw
@@ -23,17 +23,22 @@ include_directories(${EIGEN_ROOT})
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIRS})
+
 # Set sources for the library
 set(SOURCES
     ./src/main.cpp
     ./src/CQT.cpp
     ./src/utils.cpp
+    ./src/cnpy.cpp
 )
 
 # Set headers for the library
 set(HEADERS
     ./src/CQT.h
     ./src/utils.h
+    ./src/cnpy.h
 )
 
 # Set so library output path
