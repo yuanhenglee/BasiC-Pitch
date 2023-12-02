@@ -18,6 +18,8 @@ typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     Matrixf;
 typedef Eigen::Matrix<std::complex<float>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     Matrixcf;
+typedef Eigen::Tensor<float, 3, Eigen::RowMajor> Tensor3f;
+typedef Eigen::Tensor<float, 2, Eigen::RowMajor> Tensor2f;
 
 namespace py = pybind11;
 
@@ -86,7 +88,7 @@ class CQ {
         Matrixcf forward( const Vectorf& x, int hop_length );
 
         // harmonic stacking
-        py::array_t<float> harmonicStacking(const Matrixcf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
+        Tensor3f harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
 };  
 
 

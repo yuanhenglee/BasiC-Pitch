@@ -106,3 +106,11 @@ Vectorf reflectionPadding(const Vectorf &x, int pad_length) {
     }
     return padded_x;
 }
+
+py::array_t<float> tensor2pyarray(Tensor3f &tensor) {
+    std::vector<long int> shape = {tensor.dimension(0), tensor.dimension(1), tensor.dimension(2)};
+    return py::array_t<float, py::array::c_style>(
+        shape,
+        tensor.data()
+    );
+}

@@ -131,19 +131,19 @@ def visualize_harmonic_stacking():
     import BasiCPP_Pitch
     import numpy as np
     
-    np_arr = get_audio(shorten=True)
+    np_arr = get_audio()
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
     param = BasiCPP_Pitch.CQParams()
     print(param)
     t = BasiCPP_Pitch.CQ(param)
     res = t.harmonicStacking(np_arr)
     print(res.shape)
-    print(np.max(res), np.min(res))
-    res = (res - np.min(res)) / (np.max(res) - np.min(res))
+    # print(np.max(res), np.min(res))
+    # res = (res - np.min(res)) / (np.max(res) - np.min(res))
 
-    # plot_cqt({
-    #     'Harmonic Stacking': res,
-    # })
+    print(res[:, 30:50, -5:])
+    # hs = {i:res[i] for i in range(res.shape[0])}
+    # plot_cqt(hs)
 
 def test_lowpass_filter():
     import BasiCPP_Pitch
@@ -162,22 +162,25 @@ def test_lowpass_filter():
 def visualize_cqt():
     import BasiCPP_Pitch
     import numpy as np
+    import time
 
     np_arr = get_audio(shorten=False)
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
 
+    start = time.time()
     param = BasiCPP_Pitch.CQParams()
     # print(param)
     t = BasiCPP_Pitch.CQ(param)
     res = t.computeCQT(np_arr)
-    # print(res.shape)
-    # print(res[:5, :5])
+    print('C++ time: {:.3f}'.format(time.time() - start))
+    print(res.shape)
+    print(res[:5, :5])
 
-    plot_cqt({
-        'CQT': res, 
-        # 'CQT_real': res.real,
-        # 'CQT_imag': res.imag,
-    })
+    # plot_cqt({
+    #     'CQT': res, 
+    #     # 'CQT_real': res.real,
+    #     # 'CQT_imag': res.imag,
+    # })
 
     
 
@@ -185,7 +188,7 @@ def visualize_cqt():
 if __name__ == "__main__":
     # test_speed()
     # visualize_kernel()
-    # visualize_harmonic_stacking()
+    visualize_harmonic_stacking()
     # test_lowpass_filter()
-    visualize_cqt()
+    # visualize_cqt()
 

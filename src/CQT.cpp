@@ -110,45 +110,32 @@ Matrixcf CQ::forward( const Vectorf &x, int hop_length ) {
     return cqt_feat.transpose();
 }
 
-// std::vector<Matrixf>
-py::array_t<float>
-CQ::harmonicStacking(const Matrixcf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
+Tensor3f CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
     
-    // std::vector<Matrixf> stacking_features(harmonics.size(), Matrixf::Zero(cqt.rows(), cqt.cols()));
+    int n_bins = cqt.rows(), n_frames = cqt.cols();
 
-    // n_output_freqs = std::min(n_output_freqs, static_cast<int>(cqt.rows()));
-
-    std::vector<size_t> shape = {
-        harmonics.size(),
-        static_cast<unsigned long>(n_output_freqs),
-        static_cast<unsigned long>(cqt.cols())
-    };
-    py::array_t<float> result(shape);
-    // py::buffer_info buf = result.request();
-    // float* res_ptr = (float*)buf.ptr;
-    // int n_bins = cqt.rows(), n_frames = cqt.cols();
-
-    // for ( size_t i = 0 ; i < harmonics.size() ; i++ ) {
+    Tensor3f result(harmonics.size(), n_output_freqs, n_frames);
+    for ( size_t i = 0 ; i < harmonics.size() ; i++ ) {
         
-    //     Matrixf padded = Matrixf::Zero(n_bins, n_frames);
-    //     int shift = static_cast<int>(round(12.0f * bins_per_semitone * log2(harmonics[i])));
+        Matrixf padded = Matrixf::Zero(n_bins, n_frames);
+        int shift = static_cast<int>(round(12.0f * bins_per_semitone * log2(harmonics[i])));
 
-    //     if (shift == 0)
-    //         padded = cqt;
-    //     else if (shift > 0) {
-    //         padded.block(0, 0, n_bins - shift, n_frames) = cqt.block(shift, 0, n_bins - shift, n_frames);
-    //     }
-    //     else {
-    //         padded.block(-shift, 0, n_bins + shift, n_frames) = cqt.block(0, 0, n_bins + shift, n_frames);
-    //     }
+        if (shift == 0)
+            padded = cqt;
+        else if (shift > 0) {
+            padded.block(0, 0, n_bins - shift, n_frames) = cqt.block(shift, 0, n_bins - shift, n_frames);
+        }
+        else {
+            padded.block(-shift, 0, n_bins + shift, n_frames) = cqt.block(0, 0, n_bins + shift, n_frames);
+        }
 
-    //     for ( size_t j = 0 ; j < static_cast<size_t>(n_output_freqs) ; j++ ) {
-    //         for ( size_t k = 0 ; k < static_cast<size_t>(n_frames) ; k++ ) {
-    //             res_ptr[i * n_output_freqs * n_frames + j * n_frames + k] = padded(j, k);
-    //         }
-    //     }
+        Matrixf temp = padded.block(0, 0, n_output_freqs, n_frames);
 
-    // }
+        Tensor2f padded_tensor = matrix2Tensor(temp, n_output_freqs, n_frames);
+
+        result.chip(i, 0) = padded_tensor;
+
+    }
 
     return result;
 }
@@ -185,29 +172,32 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
     // librosa fasion normalization
     cqt_feat = cqt_feat.array() * _lengths.transpose().array().replicate(1, n_fft_x);
 
-    // store only the magnitude
-    Matrixf res = cqt_feat.cwiseAbs();
+    // power of magnitude
+    Matrixf power = cqt_feat.array().cwiseAbs2() + 1e-10;
+    Matrixf log_power = 10.0f * power.array().log10();
+    log_power = (log_power.array() - log_power.minCoeff()) / (log_power.maxCoeff() - log_power.minCoeff());
 
-    return res;
+    return log_power;
 }
 
 // Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
 py::array_t<float> CQ::cqtEigenHarmonic(const Vectorf& audio) {
 
-    Matrixcf cqt_feat = forward(audio, params.sample_per_frame);
+    Matrixf cqt_feat = cqtEigen(audio);
 
-    // std::vector<float> harmonics = {0.5};
-    // for ( int i = 1 ; i < N_HARMONICS ; i++ ) {
-    //     harmonics.emplace_back(i);
-    // }
+    std::vector<float> harmonics = {0.5};
+    for ( int i = 1 ; i < N_HARMONICS ; i++ ) {
+        harmonics.emplace_back(i);
+    }
 
-    // return harmonicStacking(
-    //     cqt_feat,
-    //     CONTOURS_BINS_PER_SEMITONE,
-    //     harmonics,
-    //     N_BINS_CONTOUR
-    // );
-    return py::array_t<float>();
+    Tensor3f hs = harmonicStacking(
+        cqt_feat,
+        CONTOURS_BINS_PER_SEMITONE,
+        harmonics,
+        N_BINS_CONTOUR
+    );
+
+    return tensor2pyarray(hs);
 }
 
 

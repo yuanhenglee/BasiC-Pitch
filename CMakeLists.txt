@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Global settings
-set(LDFLAGS "-O3 -fopenmp")
+set(LDFLAGS "-Ofast -fopenmp -fno-math-errno -march=native -DNDEBUG -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
 
 # fftw
