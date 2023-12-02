@@ -50,6 +50,7 @@ CQ::CQ(CQParams params) : params(params) {
     }
 
     loadDefaultKernel(_kernel);
+    filter_kernel = defaultLowPassFilter();
 }
 
 CQ::~CQ() = default;
@@ -154,8 +155,6 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
     cqt_feat.block(start , 0, _n_bins, n_fft_x) = forward(audio, hop);
 
     Vectorf audio_down = audio;
-
-    Vectorf filter_kernel = defaultLowPassFilter();
 
     for ( int i = 1 ; i < params.n_octaves ; i++ ) {
         start -= _n_bins;

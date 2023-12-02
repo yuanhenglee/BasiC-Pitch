@@ -81,6 +81,9 @@ class CQ {
         // for the normalization
         Vectorcf _lengths;
 
+        // lowpass filter for downsampling
+        Vectorf filter_kernel;
+
         // compute the kernel matrix
         void computeKernel();
 
