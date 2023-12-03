@@ -1,9 +1,6 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
+#include "typedef.h"
 #include "CQT.h"
-#include "constant.h"
 #include "utils.h"
-
 
 // bind the utils functions
 void bind_utils( py::module &m ) {
@@ -11,7 +8,6 @@ void bind_utils( py::module &m ) {
     m.def("getHamming", &getHamming);
     m.def("getHann", &getHann);
     m.def("updateEDParams", &updateEDParams);
-    m.def("createLowPassFilter", &defaultLowPassFilter);
     m.def("downsamplingByN", &downsamplingByN);
 }
 
@@ -45,6 +41,7 @@ void bind_CQ( py::module &m ) {
         .def(py::init<CQParams>(), py::arg("params"))
         .def("computeCQT", &CQ::cqtEigen)
         .def("getKernel", &CQ::getKernel)
+        .def("getFilter", &CQ::getFilter)
         .def("harmonicStacking", &CQ::cqtEigenHarmonic);
 }
 

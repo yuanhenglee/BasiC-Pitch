@@ -1,11 +1,11 @@
 #include "CQT.h"
 #include "constant.h"
 #include "utils.h"
+#include "loader.h"
 
 #include <iostream>
 #include <cassert>
 #include <cmath>
-#include <chrono>
 
 CQParams::CQParams( bool contour ) {
     sample_rate = SAMPLE_RATE;
@@ -50,7 +50,7 @@ CQ::CQ(CQParams params) : params(params) {
     }
 
     loadDefaultKernel(_kernel);
-    filter_kernel = defaultLowPassFilter();
+    loadDefaultLowPassFilter(_filter_kernel);
 }
 
 CQ::~CQ() = default;
@@ -159,7 +159,7 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
     for ( int i = 1 ; i < params.n_octaves ; i++ ) {
         start -= _n_bins;
         hop /= 2;
-        audio_down = downsamplingByN(audio_down, filter_kernel, 2.0f);
+        audio_down = downsamplingByN(audio_down, _filter_kernel, 2.0f);
         if (start >= 0)
             cqt_feat.block(start, 0, _n_bins, n_fft_x) = forward(audio_down, hop);
         else
@@ -202,4 +202,8 @@ py::array_t<float> CQ::cqtEigenHarmonic(const Vectorf& audio) {
 
 Matrixcf CQ::getKernel() {
     return _kernel;
+}
+
+Vectorf CQ::getFilter() {
+    return _filter_kernel;
 }

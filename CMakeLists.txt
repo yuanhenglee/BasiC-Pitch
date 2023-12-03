@@ -13,6 +13,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
 set( CNPY_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/cnpy )
 include_directories(${CNPY_ROOT})
 
+# nlohmann json
+set( JSON_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/nlohmann-json )
+include_directories(${JSON_ROOT})
+
 # fftw
 set(FFTW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/fftw-3.3.10/build )
 link_libraries(${FFTW_ROOT}/lib/libfftw3f.so)
@@ -35,15 +39,18 @@ set(SOURCES
     ./src/main.cpp
     ./src/CQT.cpp
     ./src/utils.cpp
+    ./src/loader.cpp
     ./src/ext/cnpy/cnpy.cpp
 )
 
 # Set headers for the library
 set(HEADERS
+    ./src/typedef.h
     ./src/CQT.h
     ./src/utils.h
+    ./src/loader.h
     ./src/ext/cnpy/cnpy.h
-    # ./src/ext/json.hpp
+    ./src/ext/nlohmann-json/json.hpp
 )
 
 # Set so library output path

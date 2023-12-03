@@ -1,27 +1,7 @@
-#ifndef CQT_H
-#define CQT_H
+#pragma once
 
-#include "Eigen/Core"
-#include "Eigen/Sparse"
-#include "unsupported/Eigen/FFT"
-#include "unsupported/Eigen/CXX11/Tensor"
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <pybind11/eigen.h>
-#include <cmath>
+#include "typedef.h"
 #include <vector>
-
-typedef Eigen::Matrix<float, 1, Eigen::Dynamic, Eigen::RowMajor> Vectorf;
-typedef Eigen::Matrix<std::complex<float>, 1, Eigen::Dynamic, Eigen::RowMajor>
-    Vectorcf;
-typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    Matrixf;
-typedef Eigen::Matrix<std::complex<float>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    Matrixcf;
-typedef Eigen::Tensor<float, 3, Eigen::RowMajor> Tensor3f;
-typedef Eigen::Tensor<float, 2, Eigen::RowMajor> Tensor2f;
-
-namespace py = pybind11;
 
 class CQParams {
     public:
@@ -67,8 +47,10 @@ class CQ {
         py::array_t<float> cqtEigenHarmonic(const Vectorf& x);
 
         // get the kernel matrix, just for testing
-        // py::array_t<std::complex<float>> getKernel();
         Matrixcf getKernel();
+
+        // get the lowpass filter, just for testing
+        Vectorf getFilter();
 
     private:
         
@@ -82,7 +64,7 @@ class CQ {
         Vectorcf _lengths;
 
         // lowpass filter for downsampling
-        Vectorf filter_kernel;
+        Vectorf _filter_kernel;
 
         // compute the kernel matrix
         void computeKernel();
@@ -93,6 +75,3 @@ class CQ {
         // harmonic stacking
         Tensor3f harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
 };  
-
-
-#endif // CQT_H

@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "cnpy.h"
 
 #include <iostream>
 #include <cmath>
@@ -59,14 +58,6 @@ void updateEDParams(CQParams &params) {
     }
 }
 
-Vectorf defaultLowPassFilter() {
-    // load the precomputed filter
-    cnpy::NpyArray arr = cnpy::npy_load("model/lowpass_filter.npy");
-    const size_t& kernel_length = arr.shape[0];
-    float* data = const_cast<float*>(arr.data<float>());
-    return Eigen::Map<Vectorf>(data, kernel_length);
-}
-
 Vectorf conv1d( Vectorf &x, Vectorf &filter_kernel, int stride ) {
     std::vector<float> result;
     for ( int i = 0 ; i + filter_kernel.size() <= x.size() ; i += stride ) {
@@ -86,15 +77,6 @@ Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n) {
     Vectorf padded_x = Vectorf::Zero(x.size() + 2 * pad_length);
     padded_x.segment(pad_length, x.size()) = x;
     return conv1d(padded_x, filter_kernel, static_cast<int>(n));
-}
-
-void loadDefaultKernel(Matrixcf &kernel) {
-    // load the precomputed kernel
-    cnpy::NpyArray arr = cnpy::npy_load("model/kernel.npy");
-    const size_t& n_bins = arr.shape[0];
-    const size_t& kernel_length = arr.shape[1];
-    std::complex<float>* data = const_cast<std::complex<float>*>(arr.data<std::complex<float>>());
-    kernel = Eigen::Map<Matrixcf>(data, n_bins, kernel_length);
 }
 
 Vectorf reflectionPadding(const Vectorf &x, int pad_length) {
