@@ -1,7 +1,31 @@
 #include "typedef.h"
 #include "CQT.h"
 #include "utils.h"
+#include "layer.h"
+#include "cnn.h"
 #include "amtModel.h"
+
+void bind_layer( py::module &m ) {
+    py::class_<Conv2D>(m, "Conv2D")
+        .def(py::init<int, int, int, int, int, int>())
+        // .def("get_name", &Conv2D::get_name)
+        .def("__repr__",
+        [] (const Conv2D &layer) {
+            return layer.get_name();
+        })
+        .def("forward", &Conv2D::forward);
+}
+
+void bind_cnn( py::module &m ) {
+    py::class_<ContourCNN>(m, "ContourCNN")
+        .def(py::init<>())
+        // .def("get_name", &ContourCNN::get_name)
+        .def("__repr__",
+        [] (const ContourCNN &cnn) {
+            return cnn.get_name();
+        })
+        .def("forward", &ContourCNN::forward);
+}
 
 // bind the amtModel class
 void bind_amtModel( py::module &m ) {
@@ -57,6 +81,8 @@ void bind_CQ( py::module &m ) {
 
 PYBIND11_MODULE(BasiCPP_Pitch, m) {
     m.doc() = "BasiCPP_Pitch: A C++ implementation of the pitch detection algorithm";
+    bind_layer(m);
+    bind_cnn(m);
     bind_amtModel(m);
     bind_utils(m);
     bind_CQParams(m);

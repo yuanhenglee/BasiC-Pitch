@@ -96,3 +96,12 @@ py::array_t<float> tensor2pyarray(Tensor3f &tensor) {
         tensor.data()
     );
 }
+
+int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride) {
+    float f = static_cast<float>(n_features_in - kernel_size_feature + 1) / static_cast<float>(stride);
+    int i = static_cast<int>(f);
+    if ( f > static_cast<float>(i) ) {
+        return i + 1;
+    }
+    return i;
+}

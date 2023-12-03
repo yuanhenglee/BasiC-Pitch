@@ -1,6 +1,9 @@
 #include "amtModel.h"
 
-amtModel::amtModel() = default;
+amtModel::amtModel() {
+    _cqt = CQ();
+    
+}
 
 void amtModel::inference(
     const Vectorf& x,

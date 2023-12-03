@@ -2,6 +2,7 @@
 
 #include "typedef.h"
 #include "CQT.h"
+#include "cnn.h"
 
 class amtModel {
     public:
@@ -25,6 +26,8 @@ class amtModel {
 
         // CQ for generating features
         CQ _cqt;
+
+        
 };
 
 

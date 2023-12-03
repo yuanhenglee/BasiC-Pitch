@@ -27,3 +27,5 @@ template <typename... Dims>
 Tensor2f matrix2Tensor(Matrixf &matrix, Dims... dims) {
     return Eigen::TensorMap<Tensor2f>(matrix.data(), {dims...});
 }
+
+int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride);
