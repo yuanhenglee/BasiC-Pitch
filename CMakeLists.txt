@@ -35,20 +35,29 @@ find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 # Set sources for the library
-set(SOURCES
-    ./src/main.cpp
-    ./src/CQT.cpp
-    ./src/utils.cpp
-    ./src/loader.cpp
+# set(SOURCES
+#     ./src/main.cpp
+#     ./src/CQT.cpp
+#     ./src/utils.cpp
+#     ./src/loader.cpp
+#     ./src/ext/cnpy/cnpy.cpp
+# )
+file(GLOB SOURCES
+    ./src/*.cpp
     ./src/ext/cnpy/cnpy.cpp
 )
 
 # Set headers for the library
-set(HEADERS
-    ./src/typedef.h
-    ./src/CQT.h
-    ./src/utils.h
-    ./src/loader.h
+# set(HEADERS
+#     ./src/typedef.h
+#     ./src/CQT.h
+#     ./src/utils.h
+#     ./src/loader.h
+#     ./src/ext/cnpy/cnpy.h
+#     ./src/ext/nlohmann-json/json.hpp
+# )
+file(GLOB HEADERS
+    ./src/*.h
     ./src/ext/cnpy/cnpy.h
     ./src/ext/nlohmann-json/json.hpp
 )

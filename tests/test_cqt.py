@@ -27,9 +27,7 @@ def visualize_harmonic_stacking():
     
     np_arr = get_audio()
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
-    param = BasiCPP_Pitch.CQParams()
-    print(param)
-    t = BasiCPP_Pitch.CQ(param)
+    t = BasiCPP_Pitch.CQ()
     res = t.harmonicStacking(np_arr)
     print(res.shape)
     # print(np.max(res), np.min(res))
@@ -45,9 +43,7 @@ def test_cqt(vis = False):
     np_arr = get_audio(shorten=False)
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
 
-    param = BasiCPP_Pitch.CQParams()
-    # print(param)
-    t = BasiCPP_Pitch.CQ(param)
+    t = BasiCPP_Pitch.CQ()
     res = t.computeCQT(np_arr)
     print(res.shape)
 

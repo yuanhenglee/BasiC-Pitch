@@ -37,14 +37,17 @@ class CQParams {
 
 class CQ {
     public:
-        CQ(CQParams params);
+        CQ();
         ~CQ();
 
         // compute cqt API for Eigen IO
         Matrixf cqtEigen(const Vectorf& x);
 
-        // Return the cqt feature with harmonic stacking
-        py::array_t<float> cqtEigenHarmonic(const Vectorf& x);
+        // Return the cqt feature with harmonic stacking, for eigen tensor IO
+        Tensor3f cqtHarmonic(const Vectorf& x);
+
+        // Return the cqt feature with harmonic stacking, for pybind IO
+        py::array_t<float> cqtHarmonicPy(const Vectorf& x);
 
         // get the kernel matrix, just for testing
         Matrixcf getKernel();

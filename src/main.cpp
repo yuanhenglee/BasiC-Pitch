@@ -1,6 +1,16 @@
 #include "typedef.h"
 #include "CQT.h"
 #include "utils.h"
+#include "amtModel.h"
+
+// bind the amtModel class
+void bind_amtModel( py::module &m ) {
+    py::class_<amtModel>(m, "amtModel")
+        .def(py::init<>())
+        .def("inference", &amtModel::inference)
+        .def("getCQ", &amtModel::getCQ);
+}
+
 
 // bind the utils functions
 void bind_utils( py::module &m ) {
@@ -38,15 +48,16 @@ void bind_CQParams( py::module &m ) {
 // bind the CQ class
 void bind_CQ( py::module &m ) {
     py::class_<CQ>(m, "CQ")
-        .def(py::init<CQParams>(), py::arg("params"))
+        .def(py::init<>())
         .def("computeCQT", &CQ::cqtEigen)
         .def("getKernel", &CQ::getKernel)
         .def("getFilter", &CQ::getFilter)
-        .def("harmonicStacking", &CQ::cqtEigenHarmonic);
+        .def("harmonicStacking", &CQ::cqtHarmonicPy);
 }
 
 PYBIND11_MODULE(BasiCPP_Pitch, m) {
     m.doc() = "BasiCPP_Pitch: A C++ implementation of the pitch detection algorithm";
+    bind_amtModel(m);
     bind_utils(m);
     bind_CQParams(m);
     bind_CQ(m);

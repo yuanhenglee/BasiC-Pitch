@@ -7,9 +7,7 @@ import os
 def test_kernel(vis = False):
     import BasiCPP_Pitch
 
-    param = BasiCPP_Pitch.CQParams()
-    print(param)
-    t = BasiCPP_Pitch.CQ(param)
+    t = BasiCPP_Pitch.CQ()
     res = t.getKernel()
     print(res.shape)
 
@@ -37,9 +35,7 @@ def test_kernel(vis = False):
 def test_lowpass_filter(vis = False):
     import BasiCPP_Pitch
     
-    param = BasiCPP_Pitch.CQParams()
-    print(param)
-    t = BasiCPP_Pitch.CQ(param)
+    t = BasiCPP_Pitch.CQ()
     lf = t.getFilter()
 
     print(lf.shape)

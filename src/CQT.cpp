@@ -36,9 +36,7 @@ CQParams::CQParams( bool contour ) {
     frame_per_second = static_cast<int>(static_cast<float>(sample_rate) / sample_per_frame);
 }
 
-CQ::CQ(CQParams params) : params(params) {
-    // computeKernel();
-    
+CQ::CQ() : params(CQParams(true)) {
     // Compute the length of the kernels for later normalization
     int _n_bins = params.n_bins;
     _lengths = Vectorcf::Zero(_n_bins);
@@ -180,7 +178,7 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
 }
 
 // Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
-py::array_t<float> CQ::cqtEigenHarmonic(const Vectorf& audio) {
+Tensor3f CQ::cqtHarmonic(const Vectorf& audio) {
 
     Matrixf cqt_feat = cqtEigen(audio);
 
@@ -195,7 +193,11 @@ py::array_t<float> CQ::cqtEigenHarmonic(const Vectorf& audio) {
         harmonics,
         N_BINS_CONTOUR
     );
+    return hs;
+}
 
+py::array_t<float> CQ::cqtHarmonicPy(const Vectorf& audio) {
+    Tensor3f hs = cqtHarmonic(audio);
     return tensor2pyarray(hs);
 }
 
