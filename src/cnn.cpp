@@ -22,22 +22,18 @@ CNN::~CNN() {
 
 void CNN::forward( const float* input, float* output ) {
     std::cout << "CNN forward pass" << std::endl;
-
-    for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
-        // TODO: allocate memory for output 
-        _layers[i]->forward( input, output );
-    }
 }
 
-ContourCNN::ContourCNN() : CNN( 1, 1 ) {
-    std::cout << "ContourCNN initialized" << std::endl;
-}
-
-std::string ContourCNN::get_name() const {
-    std::string name = "ContourCNN <\n";
+std::string CNN::get_name() const {
+    std::string name = "CNN <\n";
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
         name += _layers[i]->get_name() + "\n";
     }
     name += ">";
     return name;
+}
+
+
+ContourCNN::ContourCNN() : CNN( 1, 1 ) {
+    std::cout << "ContourCNN initialized" << std::endl;
 }

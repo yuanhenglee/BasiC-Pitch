@@ -1,3 +1,4 @@
+import numpy as np
 
 def test_cnn():
     import BasiCPP_Pitch

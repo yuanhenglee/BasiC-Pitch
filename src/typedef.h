@@ -16,7 +16,9 @@ typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     Matrixf;
 typedef Eigen::Matrix<std::complex<float>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     Matrixcf;
+typedef Eigen::Tensor<float, 4, Eigen::RowMajor> Tensor4f;
 typedef Eigen::Tensor<float, 3, Eigen::RowMajor> Tensor3f;
 typedef Eigen::Tensor<float, 2, Eigen::RowMajor> Tensor2f;
+typedef Eigen::Tensor<float, 1, Eigen::RowMajor> Tensor1f;
 
 namespace py = pybind11;

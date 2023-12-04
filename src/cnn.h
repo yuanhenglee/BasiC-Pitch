@@ -15,7 +15,7 @@ class CNN {
         // inference API for Eigen IO
         void forward( const float* input, float* output );
 
-        virtual std::string get_name() const = 0;
+        std::string get_name() const;
     
         int _input_size;
         int _output_size;
@@ -27,5 +27,4 @@ class ContourCNN : public CNN {
 
         ContourCNN(); 
 
-        std::string get_name() const override;
 };
