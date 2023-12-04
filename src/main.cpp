@@ -17,14 +17,12 @@ void bind_layer( py::module &m ) {
 }
 
 void bind_cnn( py::module &m ) {
-    py::class_<ContourCNN>(m, "ContourCNN")
-        .def(py::init<>())
-        // .def("get_name", &ContourCNN::get_name)
+    py::class_<CNN>(m, "CNN")
+        .def(py::init<std::string>())
         .def("__repr__",
-        [] (const ContourCNN &cnn) {
+        [] (const CNN &cnn) {
             return cnn.get_name();
-        })
-        .def("forward", &ContourCNN::forward);
+        });
 }
 
 // bind the amtModel class

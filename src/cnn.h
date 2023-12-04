@@ -3,28 +3,24 @@
 #include "typedef.h"
 #include "layer.h"
 #include <vector>
+#include <string>
 
 
 class CNN {
     public:
 
-        CNN( int input_size, int output_size );
+        CNN( const std::string model_name );
 
         ~CNN();
     
         // inference API for Eigen IO
-        void forward( const float* input, float* output );
+        Tensor3f forward( const Tensor3f& input ) const;
 
         std::string get_name() const;
     
-        int _input_size;
-        int _output_size;
         std::vector<Layer*> _layers;
-};
 
-class ContourCNN : public CNN {
-    public:
-
-        ContourCNN(); 
-
+    private:
+    
+        std::string _model_name;
 };

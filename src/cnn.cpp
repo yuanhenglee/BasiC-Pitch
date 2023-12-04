@@ -1,39 +1,34 @@
 #include "cnn.h"
+#include "constant.h"
+#include "loader.h"
 #include <iostream>
 
-CNN::CNN( int input_size, int output_size) : _input_size(input_size), _output_size(output_size) {
-    // TODO : load weights
-    std::cout << "CNN initialized" << std::endl;
-
-    Layer* layer1 = new Conv2D( 1, 1, 1, 5, 5, 1 );
-    Layer* layer2 = new Conv2D( 1, 1, 1, 3, 3, 1 );
-
-    _layers.push_back( layer1 );
-    _layers.push_back( layer2 );
+CNN::CNN( const std::string model_name ) : _model_name( model_name ) {
+    std::cout << "CNN " + model_name + " constructor called" << std::endl;
+    loadCNNModel( _layers, model_name );
 }
 
 CNN::~CNN() {
-    // for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
-    //     delete _layers[i];
-    // }
+    for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
+        delete _layers[i];
+    }
     // _layers.clear();
-    ;
 }
 
-void CNN::forward( const float* input, float* output ) {
+Tensor3f CNN::forward( const Tensor3f& input ) const {
     std::cout << "CNN forward pass" << std::endl;
+    Tensor3f output = input;
+    for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
+        output = _layers[i]->forward( output );
+    }
+    return output;
 }
 
 std::string CNN::get_name() const {
-    std::string name = "CNN <\n";
+    std::string name = _model_name + " <\n";
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
         name += _layers[i]->get_name() + "\n";
     }
     name += ">";
     return name;
-}
-
-
-ContourCNN::ContourCNN() : CNN( 1, 1 ) {
-    std::cout << "ContourCNN initialized" << std::endl;
 }

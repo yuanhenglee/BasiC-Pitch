@@ -9,7 +9,7 @@ using json = nlohmann::json;
 class Layer {
     public:
 
-        Layer( int input_size, int output_size ) : _input_size( input_size ), _output_size( output_size ){}
+        Layer() = default;
 
         virtual ~Layer() = default;
 
@@ -19,7 +19,8 @@ class Layer {
 
         virtual void loadWeights( int& json_idx, const json& weights ) = 0;
 
-    private:
+    protected:
+
         int _input_size;
         int _output_size;
 };
