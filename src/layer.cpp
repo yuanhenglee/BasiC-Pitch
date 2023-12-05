@@ -3,34 +3,29 @@
 #include <iostream>
 #include <string>
 
-Conv2D::Conv2D(
-    int n_filters_in,
-    int n_filters_out,
-    int n_features_in,
-    int kernel_size_time,
-    int kernel_size_feature,
-    int stride
-) :
-    _n_filters_in( n_filters_in ),
-    _n_filters_out( n_filters_out ),
-    _n_features_in( n_features_in ),
-    _n_features_out( computeNFeaturesOut(n_features_in, kernel_size_feature, stride) ),
-    _kernel_size_time( kernel_size_time ),
-    _kernel_size_feature( kernel_size_feature ),
-    _stride( stride ),
-    Layer() {
-    _input_size = _n_filters_in * _n_features_in;
-    _output_size = _n_filters_out * _n_features_out;
-    std::cout << get_name() << " constructor called" << std::endl;
-}
+// Conv2D::Conv2D(
+//     int n_filters_in,
+//     int n_filters_out,
+//     int n_features_in,
+//     int kernel_size_time,
+//     int kernel_size_feature,
+//     int stride
+// ) :
+//     _n_filters_in( n_filters_in ),
+//     _n_filters_out( n_filters_out ),
+//     _n_features_in( n_features_in ),
+//     _n_features_out( computeNFeaturesOut(n_features_in, kernel_size_feature, stride) ),
+//     _kernel_size_time( kernel_size_time ),
+//     _kernel_size_feature( kernel_size_feature ),
+//     _stride( stride ),
+//     Layer() {
+//     _input_size = _n_filters_in * _n_features_in;
+//     _output_size = _n_filters_out * _n_features_out;
+//     std::cout << get_name() << " constructor called" << std::endl;
+// }
 
 Conv2D::Conv2D( int& json_idx, const json& weights ) : Layer() {
     loadWeights( json_idx, weights );
-    std::cout << get_name() << " constructor called" << std::endl;
-}
-
-Conv2D::~Conv2D() {
-    std::cout << get_name() << " destructor called" << std::endl;
 }
 
 std::string Conv2D::get_name() const{
@@ -90,4 +85,14 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
         if(activationType.empty())
             json_idx++;
     }
+}
+
+std::string ReLU::get_name() const{
+    return "ReLU";
+}
+
+Tensor3f ReLU::forward( const Tensor3f& input ) const{
+    // std::cout << get_name() << " forward pass" << std::endl;
+    Tensor3f output = input.cwiseMax(0.0f);
+    return output;
 }

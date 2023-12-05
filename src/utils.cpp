@@ -97,6 +97,17 @@ py::array_t<float> tensor2pyarray(Tensor3f &tensor) {
     );
 }
 
+Tensor3f pyarray2tensor(py::array_t<float> &pyarray) {
+    auto buf = pyarray.request();
+    int ndim = buf.ndim;
+    if ( ndim != 3 ) {
+        throw std::runtime_error("Number of dimensions must be 3");
+    }
+    auto ptr = static_cast<float *>(buf.ptr);
+    auto shape = buf.shape;
+    return Eigen::TensorMap<Tensor3f>(ptr, shape[0], shape[1], shape[2]);
+}
+
 int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride) {
     // padding == "same"
     float f = static_cast<float>(n_features_in) / static_cast<float>(stride);

@@ -23,6 +23,8 @@ Vectorf reflectionPadding(const Vectorf &x, int pad_length);
 
 py::array_t<float> tensor2pyarray(Tensor3f &tensor);
 
+Tensor3f pyarray2tensor(py::array_t<float> &pyarray);
+
 template <typename... Dims>
 Tensor2f matrix2Tensor(Matrixf &matrix, Dims... dims) {
     return Eigen::TensorMap<Tensor2f>(matrix.data(), {dims...});

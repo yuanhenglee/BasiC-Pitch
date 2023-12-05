@@ -6,14 +6,14 @@
 #include "amtModel.h"
 
 void bind_layer( py::module &m ) {
-    py::class_<Conv2D>(m, "Conv2D")
-        .def(py::init<int, int, int, int, int, int>())
-        // .def("get_name", &Conv2D::get_name)
-        .def("__repr__",
-        [] (const Conv2D &layer) {
-            return layer.get_name();
-        })
-        .def("forward", &Conv2D::forward);
+    auto m_layer = m.def_submodule("layer");
+    py::class_<ReLU>(m_layer, "ReLU")
+        .def(py::init<>())
+        .def("forward", [] ( const ReLU &relu, py::array_t<float> input ) {
+            Tensor3f input_tensor = pyarray2tensor(input);
+            Tensor3f output_tensor = relu.forward(input_tensor);
+            return tensor2pyarray(output_tensor);
+        });
 }
 
 void bind_cnn( py::module &m ) {
