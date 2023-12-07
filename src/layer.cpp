@@ -92,7 +92,29 @@ std::string ReLU::get_name() const{
 }
 
 Tensor3f ReLU::forward( const Tensor3f& input ) const{
-    // std::cout << get_name() << " forward pass" << std::endl;
     Tensor3f output = input.cwiseMax(0.0f);
+    return output;
+}
+
+std::string Sigmoid::get_name() const{
+    return "Sigmoide";
+}
+
+Tensor3f Sigmoid::forward( const Tensor3f& input ) const{
+   Tensor3f output;
+   for ( int i = 0 ; i < input.dimension(0) ; i++ ) {
+       for ( int j = 0 ; j < input.dimension(1) ; j++ ) {
+           for ( int k = 0 ; k < input.dimension(2) ; k++ ) {
+               if ( input(i, j, k) > 0 ) {
+                   output(i, j, k) = 1.0f / (1.0f + std::exp(-input(i, j, k)));
+               }
+               else {
+                   float exp_x = std::exp(input(i, j, k));
+                   output(i, j, k) = exp_x / (1.0f + exp_x);
+               }
+           }
+       }
+   }
+    
     return output;
 }

@@ -14,6 +14,13 @@ void bind_layer( py::module &m ) {
             Tensor3f output_tensor = relu.forward(input_tensor);
             return tensor2pyarray(output_tensor);
         });
+    py::class_<Sigmoid>(m_layer, "Sigmoid")
+        .def(py::init<>())
+        .def("forward", [] ( const Sigmoid &sigmoid, py::array_t<float> input ) {
+            Tensor3f input_tensor = pyarray2tensor(input);
+            Tensor3f output_tensor = sigmoid.forward(input_tensor);
+            return tensor2pyarray(output_tensor);
+        });
 }
 
 void bind_cnn( py::module &m ) {

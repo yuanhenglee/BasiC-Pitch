@@ -65,3 +65,12 @@ class ReLU : public Layer {
         Tensor3f forward( const Tensor3f& input ) const override;
 
 };
+
+class Sigmoid : public Layer {
+    public:
+
+        std::string get_name() const override;
+
+        Tensor3f forward( const Tensor3f& input ) const override;
+
+};

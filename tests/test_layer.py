@@ -9,10 +9,31 @@ def test_relu():
 
     np_out = relu.forward(np_in)
 
+    gold = np_in.copy()
+    gold[gold < 0] = 0
+
+    assert np.allclose(np_out, gold)
+
+def test_sigmoid():
+    from BasiCPP_Pitch import layer
+
+    np_in = np.arange(0, 24).reshape(2, 3, 4)
+
+    sigmoid = layer.Sigmoid()
+
+    np_out = sigmoid.forward(np_in)
+
     print(np_out)
 
+    gold = 1 / (1 + np.exp(-np_in))
+
+    print(np_out)
+
+    assert np.allclose(np_out, gold)
+
 if __name__ == '__main__':
-    test_relu()
+    # test_relu()
+    test_sigmoid()
 
     
     
