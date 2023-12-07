@@ -15,7 +15,7 @@ class Layer {
 
         virtual std::string get_name() const = 0;
 
-        virtual Tensor3f forward( const Tensor3f& input ) const = 0;
+        virtual VecMatrixf forward( const VecMatrixf& input ) const = 0;
 
     protected:
 
@@ -38,7 +38,7 @@ class Conv2D : public Layer {
 
         std::string get_name() const override;
 
-        Tensor3f forward( const Tensor3f& input ) const override;
+        VecMatrixf forward( const VecMatrixf& input ) const override;
 
         void loadWeights( int& json_idx, const json& weights );
 
@@ -52,7 +52,7 @@ class Conv2D : public Layer {
         int _kernel_size_feature;
         int _stride;
 
-        Tensor4f _weights;
+        VecVecMatrixf _weights;
         Vectorf _bias;
 
 };
@@ -62,7 +62,7 @@ class ReLU : public Layer {
 
         std::string get_name() const override;
 
-        Tensor3f forward( const Tensor3f& input ) const override;
+        VecMatrixf forward( const VecMatrixf& input ) const override;
 
 };
 
@@ -71,6 +71,6 @@ class Sigmoid : public Layer {
 
         std::string get_name() const override;
 
-        Tensor3f forward( const Tensor3f& input ) const override;
+        VecMatrixf forward( const VecMatrixf& input ) const override;
 
 };

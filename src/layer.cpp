@@ -37,7 +37,7 @@ std::string Conv2D::get_name() const{
         ")";
 }
 
-Tensor3f Conv2D::forward( const Tensor3f& input ) const{
+VecMatrixf Conv2D::forward( const VecMatrixf& input ) const{
     std::cout << get_name() << " forward pass" << std::endl;
     return input;
 }
@@ -54,9 +54,17 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
     _output_size = _n_filters_out * _n_features_out;
 
     // shape of the Tensorflow weights json: ( kernel_size_time, kernel_size_feature, n_filters_in, n_filters_out )
+    // shape of _weights: ( n_filters_in, n_filters_out, kernel_size_time, kernel_size_feature )
     const json& weights = w_json["weights"];
     auto layer_weights = weights.at(0);
-    _weights = Tensor4f( _kernel_size_time, _kernel_size_feature, _n_filters_in, _n_filters_out);
+    _weights.resize( _n_filters_in );
+    for ( size_t i = 0 ; i < _n_filters_in ; i++ ) {
+        _weights[i].resize( _n_filters_out );
+        for ( size_t j = 0 ; j < _n_filters_out ; j++ ) {
+            _weights[i][j] = Matrixf::Zero( _kernel_size_time, _kernel_size_feature );
+        }
+    }
+
     for ( size_t i = 0 ; i < _kernel_size_time ; i++ ) {
         auto l1 = layer_weights.at(i);
         for ( size_t j = 0 ; j < _kernel_size_feature ; j++ ) {
@@ -64,7 +72,7 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
             for ( size_t k = 0 ; k < _n_filters_in ; k++ ) {
                 auto l3 = l2.at(k);
                 for ( size_t l = 0 ; l < _n_filters_out ; l++ ) {
-                    _weights(i, j, k, l) = l3.at(l).get<float>();
+                    _weights[k][l](i, j) = l3.at(l).get<float>();
                 }
             }
         }
@@ -91,8 +99,14 @@ std::string ReLU::get_name() const{
     return "ReLU";
 }
 
-Tensor3f ReLU::forward( const Tensor3f& input ) const{
-    Tensor3f output = input.cwiseMax(0.0f);
+VecMatrixf ReLU::forward( const VecMatrixf& input ) const{
+    VecMatrixf output(input);
+    std::vector<int> shape = {input.size(), input[0].rows(), input[0].cols()};
+    for ( int i = 0 ; i < shape[0] ; i++ )
+        for ( int j = 0 ; j < shape[1] ; j++ )
+            for ( int k = 0 ; k < shape[2] ; k++ )
+                if ( output[i](j, k) < 0 )
+                    output[i](j, k) = 0;
     return output;
 }
 
@@ -100,21 +114,18 @@ std::string Sigmoid::get_name() const{
     return "Sigmoide";
 }
 
-Tensor3f Sigmoid::forward( const Tensor3f& input ) const{
-   Tensor3f output(input.dimension(0), input.dimension(1), input.dimension(2));
-   for ( int i = 0 ; i < input.dimension(0) ; i++ ) {
-       for ( int j = 0 ; j < input.dimension(1) ; j++ ) {
-           for ( int k = 0 ; k < input.dimension(2) ; k++ ) {
-               if ( input(i, j, k) > 0 ) {
-                   output(i, j, k) = 1.0f / (1.0f + std::exp(-input(i, j, k)));
-               }
-               else {
-                   float exp_x = std::exp(input(i, j, k));
-                   output(i, j, k) = exp_x / (1.0f + exp_x);
-               }
-           }
-       }
-   }
-    
+VecMatrixf Sigmoid::forward( const VecMatrixf& input ) const{
+    VecMatrixf output(input);
+    std::vector<int> shape = {input.size(), input[0].rows(), input[0].cols()};
+    for ( int i = 0 ; i < shape[0] ; i++ )
+        for ( int j = 0 ; j < shape[1] ; j++ )
+            for ( int k = 0 ; k < shape[2] ; k++ ) {
+                if ( input[i](j, k) > 0 )
+                    output[i](j, k) = 1.0f / (1.0f + std::exp(-input[i](j, k)));
+                else {
+                    float exp_x = std::exp(input[i](j, k));
+                    output[i](j, k) = exp_x / (1.0f + exp_x);
+                }
+            }
     return output;
 }

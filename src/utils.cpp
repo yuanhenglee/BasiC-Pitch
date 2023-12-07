@@ -12,6 +12,47 @@ void printMat(Matrixcf &mat) {
     std::cout << mat << std::endl;
 }
 
+void printPyarray(py::array_t<float> &pyarray) {
+    if ( pyarray.ndim() == 1 ) {
+        auto r = pyarray.unchecked<1>();
+        for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+            std::cout << r(i) << " ";
+        }
+        std::cout << std::endl;
+    }
+    else if ( pyarray.ndim() == 2 ) {
+        auto r = pyarray.unchecked<2>();
+        for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+            for ( int j = 0 ; j < r.shape(1) ; j++ ) {
+                std::cout << r(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    else if ( pyarray.ndim() == 3 ) {
+        auto r = pyarray.unchecked<3>();
+        for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+            for ( int j = 0 ; j < r.shape(1) ; j++ ) {
+                for ( int k = 0 ; k < r.shape(2) ; k++ ) {
+                    std::cout << r(i, j, k) << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
+        }
+    }
+    else {
+        std::cout << "ndim > 3" << std::endl;
+    }
+}
+
+void printVecMatrixf(VecMatrixf &tensor) {
+    for ( int i = 0 ; i < tensor.size() ; i++ ) {
+        std::cout << "i = " << i << std::endl;
+        printMat(tensor[i]);
+    }
+}
+
 Vectorcf getHamming(int window_size) {
     Vectorcf window(window_size);
     for ( int i = 0 ; i < window_size ; i++ ) {
@@ -89,23 +130,31 @@ Vectorf reflectionPadding(const Vectorf &x, int pad_length) {
     return padded_x;
 }
 
-py::array_t<float> tensor2pyarray(Tensor3f &tensor) {
-    std::vector<long int> shape = {tensor.dimension(0), tensor.dimension(1), tensor.dimension(2)};
-    return py::array_t<float, py::array::c_style>(
-        shape,
-        tensor.data()
-    );
+py::array_t<float> mat3D2pyarray(VecMatrixf &tensor) {
+    std::vector<long int> shape = {tensor.size(), tensor[0].rows(), tensor[0].cols()};
+    py::array_t<float> pyarray(shape);
+    auto r = pyarray.mutable_unchecked<3>();
+    for ( py::ssize_t i = 0 ; i < r.shape(0) ; i++ ) {
+        for ( py::ssize_t j = 0 ; j < r.shape(1) ; j++ ) {
+            for ( py::ssize_t k = 0 ; k < r.shape(2) ; k++ ) {
+                r(i, j, k) = tensor[i](j, k);
+            }
+        }
+    }
+    return pyarray;
 }
 
-Tensor3f pyarray2tensor(py::array_t<float> &pyarray) {
-    auto buf = pyarray.request();
-    int ndim = buf.ndim;
-    if ( ndim != 3 ) {
-        throw std::runtime_error("Number of dimensions must be 3");
+VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray) {
+    auto r = pyarray.unchecked<3>();
+    VecMatrixf tensor(r.shape(0), Matrixf::Zero(r.shape(1), r.shape(2)));
+    for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+        for ( int j = 0 ; j < r.shape(1) ; j++ ) {
+            for ( int k = 0 ; k < r.shape(2) ; k++ ) {
+                tensor[i](j, k) = r(i, j, k);
+            }
+        }
     }
-    auto ptr = static_cast<float *>(buf.ptr);
-    auto shape = buf.shape;
-    return Eigen::TensorMap<Tensor3f>(ptr, shape[0], shape[1], shape[2]);
+    return tensor;
 }
 
 int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride) {

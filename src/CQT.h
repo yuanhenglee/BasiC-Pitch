@@ -43,11 +43,8 @@ class CQ {
         // compute cqt API for Eigen IO
         Matrixf cqtEigen(const Vectorf& x);
 
-        // Return the cqt feature with harmonic stacking, for eigen tensor IO
-        Tensor3f cqtHarmonic(const Vectorf& x);
-
-        // Return the cqt feature with harmonic stacking, for pybind IO
-        py::array_t<float> cqtHarmonicPy(const Vectorf& x);
+        // Return the cqt feature with harmonic stacking, for vector of matrix IO
+        VecMatrixf cqtHarmonic(const Vectorf& x);
 
         // get the kernel matrix, just for testing
         Matrixcf getKernel();
@@ -76,5 +73,5 @@ class CQ {
         Matrixcf forward( const Vectorf& x, int hop_length );
 
         // harmonic stacking
-        Tensor3f harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
+        VecMatrixf harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
 };  

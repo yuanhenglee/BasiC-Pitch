@@ -9,6 +9,10 @@ void printMat(Matrixf &mat);
 
 void printMat(Matrixcf &mat);
 
+void printPyarray(py::array_t<float> &pyarray);
+
+void printVecMatrixf(VecMatrixf &tensor);
+
 Vectorcf getHamming(int window_size);
 
 Vectorcf getHann(int window_size);
@@ -21,13 +25,8 @@ Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n);
 
 Vectorf reflectionPadding(const Vectorf &x, int pad_length);
 
-py::array_t<float> tensor2pyarray(Tensor3f &tensor);
+py::array_t<float> mat3D2pyarray(VecMatrixf &tensor);
 
-Tensor3f pyarray2tensor(py::array_t<float> &pyarray);
-
-template <typename... Dims>
-Tensor2f matrix2Tensor(Matrixf &matrix, Dims... dims) {
-    return Eigen::TensorMap<Tensor2f>(matrix.data(), {dims...});
-}
+VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray);
 
 int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride);

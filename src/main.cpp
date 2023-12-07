@@ -10,16 +10,16 @@ void bind_layer( py::module &m ) {
     py::class_<ReLU>(m_layer, "ReLU")
         .def(py::init<>())
         .def("forward", [] ( const ReLU &relu, py::array_t<float> input ) {
-            Tensor3f input_tensor = pyarray2tensor(input);
-            Tensor3f output_tensor = relu.forward(input_tensor);
-            return tensor2pyarray(output_tensor);
+            VecMatrixf input_tensor = pyarray2mat3D(input);
+            VecMatrixf output_tensor = relu.forward(input_tensor);
+            return mat3D2pyarray(output_tensor);
         });
     py::class_<Sigmoid>(m_layer, "Sigmoid")
         .def(py::init<>())
         .def("forward", [] ( const Sigmoid &sigmoid, py::array_t<float> input ) {
-            Tensor3f input_tensor = pyarray2tensor(input);
-            Tensor3f output_tensor = sigmoid.forward(input_tensor);
-            return tensor2pyarray(output_tensor);
+            VecMatrixf input_tensor = pyarray2mat3D(input);
+            VecMatrixf output_tensor = sigmoid.forward(input_tensor);
+            return mat3D2pyarray(output_tensor);
         });
 }
 
@@ -43,11 +43,17 @@ void bind_amtModel( py::module &m ) {
 
 // bind the utils functions
 void bind_utils( py::module &m ) {
-    // m.def("printMat", &printMat);
-    m.def("getHamming", &getHamming);
-    m.def("getHann", &getHann);
-    m.def("updateEDParams", &updateEDParams);
-    m.def("downsamplingByN", &downsamplingByN);
+    auto m_utils = m.def_submodule("utils");
+#ifdef BIND_DEBUG
+    m_utils.def("testMatConversion", [] ( py::array_t<float> input ) {
+        printPyarray(input);
+        VecMatrixf input_tensor = pyarray2mat3D(input);
+        printVecMatrixf(input_tensor);
+        auto output = mat3D2pyarray(input_tensor);
+        printPyarray(output);
+        return output;
+    });
+#endif
 }
 
 // bind the CQParams class
@@ -81,7 +87,10 @@ void bind_CQ( py::module &m ) {
         .def("computeCQT", &CQ::cqtEigen)
         .def("getKernel", &CQ::getKernel)
         .def("getFilter", &CQ::getFilter)
-        .def("harmonicStacking", &CQ::cqtHarmonicPy);
+        .def("harmonicStacking", [] ( CQ &cq, Vectorf &x ) {
+            VecMatrixf output_tensor = cq.cqtHarmonic(x);
+            return mat3D2pyarray(output_tensor);
+        });
 }
 
 PYBIND11_MODULE(BasiCPP_Pitch, m) {

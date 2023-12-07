@@ -14,7 +14,7 @@ void amtModel::inference(
     Vectorf& contour_output // Y_p in the paper, 3 bins per semitone
 ) {
     // compute harmonic stacking, shape : (n_harmonics, n_bins, n_frames)
-    Tensor3f cqt = _cqt.cqtHarmonic(x);
+    VecMatrixf cqt = _cqt.cqtHarmonic(x);
 
 
     // TODO: compute onset_output, note_output, contour_output

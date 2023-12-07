@@ -16,9 +16,9 @@ CNN::~CNN() {
     // _layers.clear();
 }
 
-Tensor3f CNN::forward( const Tensor3f& input ) const {
+VecMatrixf CNN::forward( const VecMatrixf& input ) const {
     std::cout << "CNN forward pass" << std::endl;
-    Tensor3f output = input;
+    VecMatrixf output = input;
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
         output = _layers[i]->forward( output );
     }
