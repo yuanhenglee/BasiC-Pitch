@@ -54,13 +54,11 @@ void loadCNNModel( std::vector<Layer*>& layers, std::string model_name ) {
             if ( layer_json.contains("activation") ) {
                 std::string activation = layer_json["activation"].get<std::string>();
                 if ( activation == "relu" ) {
-                    // TODO: add ReLU layer
-                    std::cout << "layers.emplace_back(new ReLU());" << std::endl;
+                    layers.emplace_back(new ReLU());
                     json_idx++;
                 }
                 else if ( activation == "sigmoid" ) {
-                    // TODO: add Sigmoid layer
-                    std::cout << "layers.emplace_back(new Sigmoid());" << std::endl;
+                    layers.emplace_back(new Sigmoid());
                     json_idx++;
                 }
                 else {

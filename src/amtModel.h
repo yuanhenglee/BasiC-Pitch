@@ -27,7 +27,17 @@ class amtModel {
         // CQ for generating features
         CQ _cqt;
 
-        
+
+        // CNN for onset detection
+        CNN _onset_input_cnn;
+        CNN _onset_output_cnn;
+
+        // CNN for note detection
+        CNN _note_cnn;
+
+        // CNN for contour detection
+        CNN _contour_cnn;
+
 };
 
 

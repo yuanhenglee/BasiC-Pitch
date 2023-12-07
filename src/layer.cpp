@@ -101,7 +101,7 @@ std::string Sigmoid::get_name() const{
 }
 
 Tensor3f Sigmoid::forward( const Tensor3f& input ) const{
-   Tensor3f output;
+   Tensor3f output(input.dimension(0), input.dimension(1), input.dimension(2));
    for ( int i = 0 ; i < input.dimension(0) ; i++ ) {
        for ( int j = 0 ; j < input.dimension(1) ; j++ ) {
            for ( int k = 0 ; k < input.dimension(2) ; k++ ) {

@@ -35,7 +35,7 @@ def get_audio(shorten=False):
 def test_harmonic_stacking(vis = False):
     import BasiCPP_Pitch
     
-    np_arr = get_audio()
+    np_arr = get_audio(shorten=True)
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
     t = BasiCPP_Pitch.CQ()
     res = t.harmonicStacking(np_arr)
@@ -71,7 +71,7 @@ def test_harmonic_stacking(vis = False):
 def test_cqt(vis = False):
     import BasiCPP_Pitch
 
-    np_arr = get_audio(shorten=False)
+    np_arr = get_audio(shorten=True)
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
 
     t = BasiCPP_Pitch.CQ()

@@ -6,6 +6,7 @@
 CNN::CNN( const std::string model_name ) : _model_name( model_name ) {
     std::cout << "CNN " + model_name + " constructor called" << std::endl;
     loadCNNModel( _layers, model_name );
+    std::cout << get_name() << std::endl;
 }
 
 CNN::~CNN() {
@@ -27,7 +28,7 @@ Tensor3f CNN::forward( const Tensor3f& input ) const {
 std::string CNN::get_name() const {
     std::string name = _model_name + " <\n";
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
-        name += _layers[i]->get_name() + "\n";
+        name += "\t" + _layers[i]->get_name() + "\n";
     }
     name += ">";
     return name;

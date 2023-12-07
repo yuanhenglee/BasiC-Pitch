@@ -1,9 +1,11 @@
 #include "amtModel.h"
 
-amtModel::amtModel() {
-    _cqt = CQ();
-    
-}
+amtModel::amtModel(): 
+    _cqt(),
+    _onset_input_cnn("Onset Input"),
+    _onset_output_cnn("Onset Output"),
+    _note_cnn("Note"),
+    _contour_cnn("Contour") {}
 
 void amtModel::inference(
     const Vectorf& x,
@@ -11,8 +13,9 @@ void amtModel::inference(
     Vectorf& note_output, // Y_n in the paper
     Vectorf& contour_output // Y_p in the paper, 3 bins per semitone
 ) {
-    // compute harmonic stacking
+    // compute harmonic stacking, shape : (n_harmonics, n_bins, n_frames)
     Tensor3f cqt = _cqt.cqtHarmonic(x);
+
 
     // TODO: compute onset_output, note_output, contour_output
 

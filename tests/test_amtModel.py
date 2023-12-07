@@ -15,3 +15,6 @@ def test_amtModelCQ():
     gold = np.load('model/kernel.npy')
 
     assert np.allclose(kernel, gold)
+
+if __name__ == "__main__":
+    test_amtModelCQ()
