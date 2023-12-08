@@ -110,7 +110,7 @@ Vectorf conv1d( Vectorf &x, Vectorf &filter_kernel, int stride ) {
 }
 
 inline int padLength(int input_length, int filter_length, int stride, int output_length) {
-    return (output_length * stride + filter_length - input_length - 1)/2;
+    return (output_length-1) * stride + filter_length - input_length;
 }
 
 // NOTE: use SAME padding as default
@@ -118,9 +118,10 @@ Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride ) {
     int n_features_out = computeNFeaturesOut(x.rows(), filter_kernel.rows(), stride);
     int n_samples_out = computeNFeaturesOut(x.cols(), filter_kernel.cols(), stride);
     Matrixf result = Matrixf::Zero(n_features_out, n_samples_out);
-    int pad_length = padLength(x.rows(), filter_kernel.rows(), stride, n_features_out);
-    Matrixf padded_x = Matrixf::Zero(x.rows() + pad_length, x.cols() + 2 * pad_length);
-    padded_x.block(pad_length, pad_length, x.rows(), x.cols()) = x;
+    int pad_width = padLength(x.rows(), filter_kernel.rows(), stride, n_features_out);
+    int pad_height = padLength(x.cols(), filter_kernel.cols(), stride, n_samples_out);
+    Matrixf padded_x = Matrixf::Zero(x.rows() + pad_width, x.cols() + pad_height);
+    padded_x.block(pad_width / 2, pad_height / 2, x.rows(), x.cols()) = x;
     
     for ( int i = 0 ; i < n_features_out ; i++ ) {
         for ( int j = 0 ; j < n_samples_out ; j++ ) {

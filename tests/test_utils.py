@@ -11,7 +11,10 @@ def test_matConversion():
 
 def test_conv2d():
     from BasiCPP_Pitch.utils import testConv2d
-    import tensorflow as tf
+    import warnings
+    warnings.simplefilter("ignore")
+    with warnings.catch_warnings():
+        import tensorflow as tf
 
     np_in = np.arange(-6.0, 6.0).reshape(3, 4)
     kernel = np.arange(-4.0, 5.0).reshape(3, 3)
