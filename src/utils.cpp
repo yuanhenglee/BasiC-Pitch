@@ -99,6 +99,7 @@ void updateEDParams(CQParams &params) {
     }
 }
 
+// NOTE: use VALID padding as default
 Vectorf conv1d( Vectorf &x, Vectorf &filter_kernel, int stride ) {
     std::vector<float> result;
     for ( int i = 0 ; i + filter_kernel.size() <= x.size() ; i += stride ) {
@@ -106,6 +107,29 @@ Vectorf conv1d( Vectorf &x, Vectorf &filter_kernel, int stride ) {
         result.push_back(temp.dot(filter_kernel));
     }
     return Eigen::Map<Vectorf>(result.data(), result.size());
+}
+
+inline int padLength(int input_length, int filter_length, int stride, int output_length) {
+    return (output_length * stride + filter_length - input_length - 1)/2;
+}
+
+// NOTE: use SAME padding as default
+Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride ) {
+    int n_features_out = computeNFeaturesOut(x.rows(), filter_kernel.rows(), stride);
+    int n_samples_out = computeNFeaturesOut(x.cols(), filter_kernel.cols(), stride);
+    Matrixf result = Matrixf::Zero(n_features_out, n_samples_out);
+    int pad_length = padLength(x.rows(), filter_kernel.rows(), stride, n_features_out);
+    Matrixf padded_x = Matrixf::Zero(x.rows() + pad_length, x.cols() + 2 * pad_length);
+    padded_x.block(pad_length, pad_length, x.rows(), x.cols()) = x;
+    
+    for ( int i = 0 ; i < n_features_out ; i++ ) {
+        for ( int j = 0 ; j < n_samples_out ; j++ ) {
+            Matrixf temp = padded_x.block(i * stride, j * stride, filter_kernel.rows(), filter_kernel.cols());
+            result(i, j) = (temp.cwiseProduct(filter_kernel)).sum();
+        }
+    }
+
+    return result;
 }
 
 // The default filter_kernel is a low-pass filter if downsample_factor != 1
@@ -160,9 +184,5 @@ VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray) {
 int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride) {
     // padding == "same"
     float f = static_cast<float>(n_features_in) / static_cast<float>(stride);
-    int i = static_cast<int>(f);
-    if ( f > static_cast<float>(i) ) {
-        return i + 1;
-    }
-    return i;
+    return std::ceil(f);
 }

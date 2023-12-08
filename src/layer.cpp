@@ -37,9 +37,20 @@ std::string Conv2D::get_name() const{
         ")";
 }
 
+// shape of input: ( n_filters_in, n_features_in, n_frames ) a.k.a. ( n_harmonics, n_bins, n_frames )
+// shape of output: ( n_filters_out, n_features_out, n_frames )
 VecMatrixf Conv2D::forward( const VecMatrixf& input ) const{
     std::cout << get_name() << " forward pass" << std::endl;
-    return input;
+    int n_frames = input[0].cols();
+    VecMatrixf output(_n_filters_out, Matrixf::Zero(_n_features_out, n_frames));
+
+    for ( int i = 0 ; i < _n_filters_in ; i++ ) {
+        for ( int j = 0 ; j < _n_filters_out ; j++ ) {
+            output[j] += conv2d(input[i], _weights[i][j], _stride);
+        }
+    }
+
+    return output;
 }
 
 void Conv2D::loadWeights( int& json_idx, const json& w_json ){

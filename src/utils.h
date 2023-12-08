@@ -21,6 +21,8 @@ void updateEDParams(CQParams &params);
 
 Vectorf conv1d(Vectorf &x, Vectorf &filter_kernel, int stride);
 
+Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride );
+
 Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n);
 
 Vectorf reflectionPadding(const Vectorf &x, int pad_length);

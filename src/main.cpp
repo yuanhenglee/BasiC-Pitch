@@ -29,6 +29,11 @@ void bind_cnn( py::module &m ) {
         .def("__repr__",
         [] (const CNN &cnn) {
             return cnn.get_name();
+        })
+        .def("forward", [] ( const CNN &cnn, py::array_t<float> input ) {
+            VecMatrixf input_tensor = pyarray2mat3D(input);
+            VecMatrixf output_tensor = cnn.forward(input_tensor);
+            return mat3D2pyarray(output_tensor);
         });
 }
 
@@ -44,7 +49,10 @@ void bind_amtModel( py::module &m ) {
 // bind the utils functions
 void bind_utils( py::module &m ) {
     auto m_utils = m.def_submodule("utils");
-#ifdef BIND_DEBUG
+    m_utils.def("testConv2d", [] ( Matrixf &x, Matrixf &filter_kernel, int stride ) {
+        Matrixf output = conv2d(x, filter_kernel, stride);
+        return output;
+    });
     m_utils.def("testMatConversion", [] ( py::array_t<float> input ) {
         printPyarray(input);
         VecMatrixf input_tensor = pyarray2mat3D(input);
@@ -53,7 +61,6 @@ void bind_utils( py::module &m ) {
         printPyarray(output);
         return output;
     });
-#endif
 }
 
 // bind the CQParams class
