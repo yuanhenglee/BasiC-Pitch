@@ -37,17 +37,20 @@ std::string Conv2D::get_name() const{
         ")";
 }
 
-// shape of input: ( n_filters_in, n_features_in, n_frames ) a.k.a. ( n_harmonics, n_bins, n_frames )
-// shape of output: ( n_filters_out, n_features_out, n_frames )
 VecMatrixf Conv2D::forward( const VecMatrixf& input ) const{
-    std::cout << get_name() << " forward pass" << std::endl;
-    int n_frames = input[0].cols();
-    VecMatrixf output(_n_filters_out, Matrixf::Zero(_n_features_out, n_frames));
+    std::cout << "\t" << get_name() << " forward pass" << std::endl;
+    int n_frames_in = input[0].rows();
+    int n_frames_out = n_frames_in;
+    VecMatrixf output(_n_filters_out, Matrixf::Zero(n_frames_out, _n_features_out));
 
     for ( int i = 0 ; i < _n_filters_in ; i++ ) {
         for ( int j = 0 ; j < _n_filters_out ; j++ ) {
             output[j] += conv2d(input[i], _weights[i][j], _stride);
         }
+    }
+
+    for ( int i = 0 ; i < _n_filters_out ; i++ ) {
+        output[i].array() += _bias[i];
     }
 
     return output;
@@ -91,9 +94,11 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
 
     // bias should be of shape ( n_filters_out )
     auto layer_bias = weights.at(1);
-    _bias.resize( _n_filters_out );
-    for ( size_t i = 0 ; i < _n_filters_out ; i++ ) {
-        _bias(i) = layer_bias.at(i).get<float>();
+    _bias = layer_bias.get<std::vector<float>>();
+
+    if ( _bias.size() != _n_filters_out ) {
+        std::cout << "Error: bias size mismatch" << std::endl;
+        exit(1);
     }
 
     if(!w_json.contains("activation")) {
@@ -104,6 +109,10 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
         if(activationType.empty())
             json_idx++;
     }
+}
+
+VecVecMatrixf Conv2D::getWeights() const{
+    return _weights;
 }
 
 std::string ReLU::get_name() const{

@@ -3,6 +3,7 @@
 #include "typedef.h"
 #include "json.hpp"
 #include <string>
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -42,6 +43,8 @@ class Conv2D : public Layer {
 
         void loadWeights( int& json_idx, const json& weights );
 
+        VecVecMatrixf getWeights() const;
+
     private:
 
         int _n_filters_in;
@@ -53,7 +56,7 @@ class Conv2D : public Layer {
         int _stride;
 
         VecVecMatrixf _weights;
-        Vectorf _bias;
+        std::vector<float> _bias;
 
 };
 

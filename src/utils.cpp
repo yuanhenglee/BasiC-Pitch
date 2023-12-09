@@ -32,13 +32,13 @@ void printPyarray(py::array_t<float> &pyarray) {
     else if ( pyarray.ndim() == 3 ) {
         auto r = pyarray.unchecked<3>();
         for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+            std::cout << "i = " << i << std::endl;
             for ( int j = 0 ; j < r.shape(1) ; j++ ) {
                 for ( int k = 0 ; k < r.shape(2) ; k++ ) {
                     std::cout << r(i, j, k) << " ";
                 }
                 std::cout << std::endl;
             }
-            std::cout << std::endl;
         }
     }
     else {
@@ -114,21 +114,25 @@ inline int padLength(int input_length, int filter_length, int stride, int output
 }
 
 // NOTE: use SAME padding as default
+// x.shape = (n_samples, n_features_in)
+// NOTE: Since we are dealing with audio signals, the number of samples remains the same
 Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride ) {
-    int n_features_out = computeNFeaturesOut(x.rows(), filter_kernel.rows(), stride);
-    int n_samples_out = computeNFeaturesOut(x.cols(), filter_kernel.cols(), stride);
-    Matrixf result = Matrixf::Zero(n_features_out, n_samples_out);
-    int pad_width = padLength(x.rows(), filter_kernel.rows(), stride, n_features_out);
-    int pad_height = padLength(x.cols(), filter_kernel.cols(), stride, n_samples_out);
-    Matrixf padded_x = Matrixf::Zero(x.rows() + pad_width, x.cols() + pad_height);
-    padded_x.block(pad_width / 2, pad_height / 2, x.rows(), x.cols()) = x;
+// void conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride, Matrixf &result ) {
+    int n_samples_out = x.rows();
+    int n_features_out = computeNFeaturesOut(x.cols(), filter_kernel.cols(), stride);
+    int pad_height = padLength(x.rows(), filter_kernel.rows(), 1, n_samples_out);
+    int pad_width = padLength(x.cols(), filter_kernel.cols(), stride, n_features_out);
+    Matrixf result(n_samples_out, n_features_out);
+    Matrixf padded_x = Matrixf::Zero(x.rows() + pad_height, x.cols() + pad_width);
+    padded_x.block(pad_height / 2, pad_width / 2, x.rows(), x.cols()) = x;
     
-    for ( int i = 0 ; i < n_features_out ; i++ ) {
-        for ( int j = 0 ; j < n_samples_out ; j++ ) {
-            Matrixf temp = padded_x.block(i * stride, j * stride, filter_kernel.rows(), filter_kernel.cols());
+    Matrixf temp(filter_kernel.rows(), filter_kernel.cols());
+    for ( int i = 0 ; i < n_samples_out ; i++ ) {
+        for ( int j = 0 ; j < n_features_out ; j++ ) {
+            temp = padded_x.block(i , j * stride, filter_kernel.rows(), filter_kernel.cols());
             result(i, j) = (temp.cwiseProduct(filter_kernel)).sum();
         }
-    }
+    }    
 
     return result;
 }

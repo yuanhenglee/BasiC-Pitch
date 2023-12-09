@@ -4,9 +4,9 @@
 #include <iostream>
 
 CNN::CNN( const std::string model_name ) : _model_name( model_name ) {
-    std::cout << "CNN " + model_name + " constructor called" << std::endl;
+    // std::cout << "CNN " + model_name + " constructor called" << std::endl;
     loadCNNModel( _layers, model_name );
-    std::cout << get_name() << std::endl;
+    // std::cout << get_name() << std::endl;
 }
 
 CNN::~CNN() {
@@ -17,11 +17,13 @@ CNN::~CNN() {
 }
 
 VecMatrixf CNN::forward( const VecMatrixf& input ) const {
-    std::cout << "CNN forward pass" << std::endl;
+    //TODO inplace forward??
+    std::cout << _model_name + " forward pass" << std::endl;
     VecMatrixf output = input;
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
         output = _layers[i]->forward( output );
     }
+    std::cout << "output size = " << output.size() << std::endl;
     return output;
 }
 
@@ -32,4 +34,8 @@ std::string CNN::get_name() const {
     }
     name += ">";
     return name;
+}
+
+std::vector<Layer*> CNN::get_layers() const {
+    return _layers;
 }

@@ -12,15 +12,17 @@ class amtModel {
         ~amtModel() = default;
 
         // inference API for Eigen IO
-        void inference(
-            const Vectorf& x,
-            Vectorf& onset_output, // Y_o in the paper
-            Vectorf& note_output, // Y_n in the paper
-            Vectorf& contour_output // Y_p in the paper, 3 bins per semitone
-        );
+        void inference( const Vectorf& x );
 
         // get the CQ object, just for testing
-        CQ getCQ();
+        CQ getCQ() { return _cqt; }
+
+        Matrixf getYo() { return _Yo; }
+
+        Matrixf getYp() { return _Yp; }
+
+        Matrixf getYn() { return _Yn; }
+
 
     private:
 
@@ -37,6 +39,15 @@ class amtModel {
 
         // CNN for contour detection
         CNN _contour_cnn;
+
+        // Buffer for storing the concat of onset and note output
+        Matrixf _Yo;
+
+        // Buffer for storing the contour output
+        Matrixf _Yp;
+
+        // Buffer for storing the note output
+        Matrixf _Yn;
 
 };
 

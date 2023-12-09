@@ -109,7 +109,7 @@ Matrixcf CQ::forward( const Vectorf &x, int hop_length ) {
     return cqt_feat.transpose();
 }
 
-// output shape = (n_harmonics, n_bins, n_frames)
+// output shape = (n_harmonics, n_frames, n_bins)
 VecMatrixf CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
     
     int n_bins = cqt.rows(), n_frames = cqt.cols();
@@ -131,7 +131,7 @@ VecMatrixf CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std:
 
         Matrixf temp = padded.block(0, 0, n_output_freqs, n_frames);
 
-        result[i] = temp;
+        result[i] = temp.transpose();
     }
 
     return result;

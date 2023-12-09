@@ -17,10 +17,12 @@ class CNN {
         VecMatrixf forward( const VecMatrixf& input ) const;
 
         std::string get_name() const;
-    
-        std::vector<Layer*> _layers;
+
+        std::vector<Layer*> get_layers() const;    
 
     private:
+
+        std::vector<Layer*> _layers;
     
         std::string _model_name;
 };

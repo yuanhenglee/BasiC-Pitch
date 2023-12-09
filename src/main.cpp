@@ -7,14 +7,25 @@
 
 void bind_layer( py::module &m ) {
     auto m_layer = m.def_submodule("layer");
-    py::class_<ReLU>(m_layer, "ReLU")
+    py::class_<Layer>(m_layer, "Layer");
+    py::class_<Conv2D, Layer>(m_layer, "Conv2D")
+        .def("getWeights", [] ( const Conv2D &conv2d ) {
+            VecVecMatrixf weights = conv2d.getWeights();
+            return weights[0][0];
+        })
+        .def("forward", [] ( const Conv2D &conv2d, py::array_t<float> input ) {
+            VecMatrixf input_tensor = pyarray2mat3D(input);
+            VecMatrixf output_tensor = conv2d.forward(input_tensor);
+            return mat3D2pyarray(output_tensor);
+        });
+    py::class_<ReLU, Layer>(m_layer, "ReLU")
         .def(py::init<>())
         .def("forward", [] ( const ReLU &relu, py::array_t<float> input ) {
             VecMatrixf input_tensor = pyarray2mat3D(input);
             VecMatrixf output_tensor = relu.forward(input_tensor);
             return mat3D2pyarray(output_tensor);
         });
-    py::class_<Sigmoid>(m_layer, "Sigmoid")
+    py::class_<Sigmoid, Layer>(m_layer, "Sigmoid")
         .def(py::init<>())
         .def("forward", [] ( const Sigmoid &sigmoid, py::array_t<float> input ) {
             VecMatrixf input_tensor = pyarray2mat3D(input);
@@ -34,6 +45,11 @@ void bind_cnn( py::module &m ) {
             VecMatrixf input_tensor = pyarray2mat3D(input);
             VecMatrixf output_tensor = cnn.forward(input_tensor);
             return mat3D2pyarray(output_tensor);
+        })
+        .def("getFirstKernel", [] ( const CNN &cnn ) {
+            std::vector<Layer*> layers(cnn.get_layers());
+            Matrixf weights = dynamic_cast<Conv2D*>(layers[0])->getWeights()[0][0];
+            return weights;
         });
 }
 
@@ -42,7 +58,10 @@ void bind_amtModel( py::module &m ) {
     py::class_<amtModel>(m, "amtModel")
         .def(py::init<>())
         .def("inference", &amtModel::inference)
-        .def("getCQ", &amtModel::getCQ);
+        .def("getCQ", &amtModel::getCQ)
+        .def("getYo", &amtModel::getYo)
+        .def("getYp", &amtModel::getYp)
+        .def("getYn", &amtModel::getYn);
 }
 
 

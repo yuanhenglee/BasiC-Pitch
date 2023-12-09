@@ -22,6 +22,7 @@ void updateEDParams(CQParams &params);
 Vectorf conv1d(Vectorf &x, Vectorf &filter_kernel, int stride);
 
 Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride );
+// void conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride, Matrixf &output );
 
 Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n);
 
