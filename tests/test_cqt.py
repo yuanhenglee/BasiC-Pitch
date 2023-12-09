@@ -35,11 +35,11 @@ def get_audio(shorten=False):
 def test_harmonic_stacking(vis = False):
     import BasiCPP_Pitch
     
-    np_arr = get_audio(shorten=True)
+    np_arr = get_audio(shorten=False)
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
     t = BasiCPP_Pitch.CQ()
-    res = t.harmonicStacking(np_arr)
-    # print(res.shape)
+    res = t.harmonicStacking(np_arr).transpose(0, 2, 1)
+    print(res.shape)
 
     # supress warning
     import warnings
@@ -56,7 +56,7 @@ def test_harmonic_stacking(vis = False):
             [0.5] + list(range(1, 8)),
             264
         )(x)
-        gold = x.numpy().squeeze().T
+        gold = x.numpy().squeeze().transpose(2, 1, 0)
     print(gold.shape)
 
     assert np.allclose(res, gold, atol=1e-2)
