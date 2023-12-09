@@ -6,7 +6,7 @@ audio_file_path = "data/Undertale-Megalovania.wav"
 midi_file_path = "data/output"
 
 try:
-    import basicpp_pitch # Import the BasiCPP Pitch Python module
+    import BasiCPP_Pitch # Import the BasiCPP Pitch Python module
     main() # Run the main function
 except ImportError: 
     print("BasiCPP Pitch Python module not found. Resolve by using basic_pitch instead.")
@@ -16,7 +16,7 @@ except ImportError:
 
 def main():
     # Initialize BasiCPP Pitch
-    amt = basicpp_pitch.BasiCPP_Pitch()
+    amt = BasiCPP_Pitch.amtModel()
 
     # Transcribe the audio and generate the MIDI file
     amt.transcribe_audio(audio_file_path, midi_file_path)

@@ -6,8 +6,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Global settings
-set(LDFLAGS "-Ofast -fopenmp -fno-math-errno -march=native -DNDEBUG -w")
+set(LDFLAGS "-O3 -fopenmp -fno-math-errno -march=native -DNDEBUG -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
+
+# cnpy
+set( CNPY_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/cnpy )
+include_directories(${CNPY_ROOT})
+
+# nlohmann json
+set( JSON_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/nlohmann-json )
+include_directories(${JSON_ROOT})
 
 # fftw
 set(FFTW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/fftw-3.3.10/build )
@@ -27,18 +35,31 @@ find_package(ZLIB REQUIRED)
 include_directories(${ZLIB_INCLUDE_DIRS})
 
 # Set sources for the library
-set(SOURCES
-    ./src/main.cpp
-    ./src/CQT.cpp
-    ./src/utils.cpp
-    ./src/cnpy.cpp
+# set(SOURCES
+#     ./src/main.cpp
+#     ./src/CQT.cpp
+#     ./src/utils.cpp
+#     ./src/loader.cpp
+#     ./src/ext/cnpy/cnpy.cpp
+# )
+file(GLOB SOURCES
+    ./src/*.cpp
+    ./src/ext/cnpy/cnpy.cpp
 )
 
 # Set headers for the library
-set(HEADERS
-    ./src/CQT.h
-    ./src/utils.h
-    ./src/cnpy.h
+# set(HEADERS
+#     ./src/typedef.h
+#     ./src/CQT.h
+#     ./src/utils.h
+#     ./src/loader.h
+#     ./src/ext/cnpy/cnpy.h
+#     ./src/ext/nlohmann-json/json.hpp
+# )
+file(GLOB HEADERS
+    ./src/*.h
+    ./src/ext/cnpy/cnpy.h
+    ./src/ext/nlohmann-json/json.hpp
 )
 
 # Set so library output path

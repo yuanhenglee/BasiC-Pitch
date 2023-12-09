@@ -1,17 +1,17 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include "Eigen/Core"
-#include "Eigen/Sparse"
-#include "unsupported/Eigen/CXX11/Tensor"
+#include "typedef.h"
 #include "CQT.h"
+
 #include <iostream>
 
 void printMat(Matrixf &mat);
 
 void printMat(Matrixcf &mat);
+
+void printPyarray(py::array_t<float> &pyarray);
+
+void printVecMatrixf(VecMatrixf &tensor);
 
 Vectorcf getHamming(int window_size);
 
@@ -19,21 +19,17 @@ Vectorcf getHann(int window_size);
 
 void updateEDParams(CQParams &params);
 
-Vectorf defaultLowPassFilter();
-
 Vectorf conv1d(Vectorf &x, Vectorf &filter_kernel, int stride);
+
+Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride );
+// void conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride, Matrixf &output );
 
 Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n);
 
-void loadDefaultKernel(Matrixcf &kernel);
-
 Vectorf reflectionPadding(const Vectorf &x, int pad_length);
 
-py::array_t<float> tensor2pyarray(Tensor3f &tensor);
+py::array_t<float> mat3D2pyarray(VecMatrixf &tensor);
 
-template <typename... Dims>
-Tensor2f matrix2Tensor(Matrixf &matrix, Dims... dims) {
-    return Eigen::TensorMap<Tensor2f>(matrix.data(), {dims...});
-}
+VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray);
 
-#endif // UTILS_H
+int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride);

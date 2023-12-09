@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "cnpy.h"
 
 #include <iostream>
 #include <cmath>
@@ -11,6 +10,47 @@ void printMat(Matrixf &mat) {
 
 void printMat(Matrixcf &mat) {
     std::cout << mat << std::endl;
+}
+
+void printPyarray(py::array_t<float> &pyarray) {
+    if ( pyarray.ndim() == 1 ) {
+        auto r = pyarray.unchecked<1>();
+        for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+            std::cout << r(i) << " ";
+        }
+        std::cout << std::endl;
+    }
+    else if ( pyarray.ndim() == 2 ) {
+        auto r = pyarray.unchecked<2>();
+        for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+            for ( int j = 0 ; j < r.shape(1) ; j++ ) {
+                std::cout << r(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    else if ( pyarray.ndim() == 3 ) {
+        auto r = pyarray.unchecked<3>();
+        for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+            std::cout << "i = " << i << std::endl;
+            for ( int j = 0 ; j < r.shape(1) ; j++ ) {
+                for ( int k = 0 ; k < r.shape(2) ; k++ ) {
+                    std::cout << r(i, j, k) << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+    else {
+        std::cout << "ndim > 3" << std::endl;
+    }
+}
+
+void printVecMatrixf(VecMatrixf &tensor) {
+    for ( int i = 0 ; i < tensor.size() ; i++ ) {
+        std::cout << "i = " << i << std::endl;
+        printMat(tensor[i]);
+    }
 }
 
 Vectorcf getHamming(int window_size) {
@@ -59,14 +99,7 @@ void updateEDParams(CQParams &params) {
     }
 }
 
-Vectorf defaultLowPassFilter() {
-    // load the precomputed filter
-    cnpy::NpyArray arr = cnpy::npy_load("model/lowpass_filter.npy");
-    const size_t& kernel_length = arr.shape[0];
-    float* data = const_cast<float*>(arr.data<float>());
-    return Eigen::Map<Vectorf>(data, kernel_length);
-}
-
+// NOTE: use VALID padding as default
 Vectorf conv1d( Vectorf &x, Vectorf &filter_kernel, int stride ) {
     std::vector<float> result;
     for ( int i = 0 ; i + filter_kernel.size() <= x.size() ; i += stride ) {
@@ -74,6 +107,34 @@ Vectorf conv1d( Vectorf &x, Vectorf &filter_kernel, int stride ) {
         result.push_back(temp.dot(filter_kernel));
     }
     return Eigen::Map<Vectorf>(result.data(), result.size());
+}
+
+inline int padLength(int input_length, int filter_length, int stride, int output_length) {
+    return (output_length-1) * stride + filter_length - input_length;
+}
+
+// NOTE: use SAME padding as default
+// x.shape = (n_samples, n_features_in)
+// NOTE: Since we are dealing with audio signals, the number of samples remains the same
+Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride ) {
+// void conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride, Matrixf &result ) {
+    int n_samples_out = x.rows();
+    int n_features_out = computeNFeaturesOut(x.cols(), filter_kernel.cols(), stride);
+    int pad_height = padLength(x.rows(), filter_kernel.rows(), 1, n_samples_out);
+    int pad_width = padLength(x.cols(), filter_kernel.cols(), stride, n_features_out);
+    Matrixf result(n_samples_out, n_features_out);
+    Matrixf padded_x = Matrixf::Zero(x.rows() + pad_height, x.cols() + pad_width);
+    padded_x.block(pad_height / 2, pad_width / 2, x.rows(), x.cols()) = x;
+    
+    Matrixf temp(filter_kernel.rows(), filter_kernel.cols());
+    for ( int i = 0 ; i < n_samples_out ; i++ ) {
+        for ( int j = 0 ; j < n_features_out ; j++ ) {
+            temp = padded_x.block(i , j * stride, filter_kernel.rows(), filter_kernel.cols());
+            result(i, j) = (temp.cwiseProduct(filter_kernel)).sum();
+        }
+    }    
+
+    return result;
 }
 
 // The default filter_kernel is a low-pass filter if downsample_factor != 1
@@ -88,15 +149,6 @@ Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n) {
     return conv1d(padded_x, filter_kernel, static_cast<int>(n));
 }
 
-void loadDefaultKernel(Matrixcf &kernel) {
-    // load the precomputed kernel
-    cnpy::NpyArray arr = cnpy::npy_load("model/kernel.npy");
-    const size_t& n_bins = arr.shape[0];
-    const size_t& kernel_length = arr.shape[1];
-    std::complex<float>* data = const_cast<std::complex<float>*>(arr.data<std::complex<float>>());
-    kernel = Eigen::Map<Matrixcf>(data, n_bins, kernel_length);
-}
-
 Vectorf reflectionPadding(const Vectorf &x, int pad_length) {
     Vectorf padded_x = Vectorf::Zero(x.size() + 2 * pad_length);
     padded_x.segment(pad_length, x.size()) = x;
@@ -107,10 +159,35 @@ Vectorf reflectionPadding(const Vectorf &x, int pad_length) {
     return padded_x;
 }
 
-py::array_t<float> tensor2pyarray(Tensor3f &tensor) {
-    std::vector<long int> shape = {tensor.dimension(0), tensor.dimension(1), tensor.dimension(2)};
-    return py::array_t<float, py::array::c_style>(
-        shape,
-        tensor.data()
-    );
+py::array_t<float> mat3D2pyarray(VecMatrixf &tensor) {
+    std::vector<long int> shape = {tensor.size(), tensor[0].rows(), tensor[0].cols()};
+    py::array_t<float> pyarray(shape);
+    auto r = pyarray.mutable_unchecked<3>();
+    for ( py::ssize_t i = 0 ; i < r.shape(0) ; i++ ) {
+        for ( py::ssize_t j = 0 ; j < r.shape(1) ; j++ ) {
+            for ( py::ssize_t k = 0 ; k < r.shape(2) ; k++ ) {
+                r(i, j, k) = tensor[i](j, k);
+            }
+        }
+    }
+    return pyarray;
+}
+
+VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray) {
+    auto r = pyarray.unchecked<3>();
+    VecMatrixf tensor(r.shape(0), Matrixf::Zero(r.shape(1), r.shape(2)));
+    for ( int i = 0 ; i < r.shape(0) ; i++ ) {
+        for ( int j = 0 ; j < r.shape(1) ; j++ ) {
+            for ( int k = 0 ; k < r.shape(2) ; k++ ) {
+                tensor[i](j, k) = r(i, j, k);
+            }
+        }
+    }
+    return tensor;
+}
+
+int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride) {
+    // padding == "same"
+    float f = static_cast<float>(n_features_in) / static_cast<float>(stride);
+    return std::ceil(f);
 }

@@ -1,11 +1,11 @@
 #include "CQT.h"
 #include "constant.h"
 #include "utils.h"
+#include "loader.h"
 
 #include <iostream>
 #include <cassert>
 #include <cmath>
-#include <chrono>
 
 CQParams::CQParams( bool contour ) {
     sample_rate = SAMPLE_RATE;
@@ -36,9 +36,7 @@ CQParams::CQParams( bool contour ) {
     frame_per_second = static_cast<int>(static_cast<float>(sample_rate) / sample_per_frame);
 }
 
-CQ::CQ(CQParams params) : params(params) {
-    // computeKernel();
-    
+CQ::CQ() : params(CQParams(true)) {
     // Compute the length of the kernels for later normalization
     int _n_bins = params.n_bins;
     _lengths = Vectorcf::Zero(_n_bins);
@@ -50,7 +48,7 @@ CQ::CQ(CQParams params) : params(params) {
     }
 
     loadDefaultKernel(_kernel);
-    filter_kernel = defaultLowPassFilter();
+    loadDefaultLowPassFilter(_filter_kernel);
 }
 
 CQ::~CQ() = default;
@@ -111,11 +109,12 @@ Matrixcf CQ::forward( const Vectorf &x, int hop_length ) {
     return cqt_feat.transpose();
 }
 
-Tensor3f CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
+// output shape = (n_harmonics, n_frames, n_bins)
+VecMatrixf CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
     
     int n_bins = cqt.rows(), n_frames = cqt.cols();
 
-    Tensor3f result(harmonics.size(), n_output_freqs, n_frames);
+    VecMatrixf result(harmonics.size());
     for ( size_t i = 0 ; i < harmonics.size() ; i++ ) {
         
         Matrixf padded = Matrixf::Zero(n_bins, n_frames);
@@ -132,10 +131,7 @@ Tensor3f CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::v
 
         Matrixf temp = padded.block(0, 0, n_output_freqs, n_frames);
 
-        Tensor2f padded_tensor = matrix2Tensor(temp, n_output_freqs, n_frames);
-
-        result.chip(i, 0) = padded_tensor;
-
+        result[i] = temp.transpose();
     }
 
     return result;
@@ -159,7 +155,7 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
     for ( int i = 1 ; i < params.n_octaves ; i++ ) {
         start -= _n_bins;
         hop /= 2;
-        audio_down = downsamplingByN(audio_down, filter_kernel, 2.0f);
+        audio_down = downsamplingByN(audio_down, _filter_kernel, 2.0f);
         if (start >= 0)
             cqt_feat.block(start, 0, _n_bins, n_fft_x) = forward(audio_down, hop);
         else
@@ -180,7 +176,7 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
 }
 
 // Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
-py::array_t<float> CQ::cqtEigenHarmonic(const Vectorf& audio) {
+VecMatrixf CQ::cqtHarmonic(const Vectorf& audio) {
 
     Matrixf cqt_feat = cqtEigen(audio);
 
@@ -189,17 +185,19 @@ py::array_t<float> CQ::cqtEigenHarmonic(const Vectorf& audio) {
         harmonics.emplace_back(i);
     }
 
-    Tensor3f hs = harmonicStacking(
+    VecMatrixf hs = harmonicStacking(
         cqt_feat,
         CONTOURS_BINS_PER_SEMITONE,
         harmonics,
         N_BINS_CONTOUR
     );
-
-    return tensor2pyarray(hs);
+    return hs;
 }
-
 
 Matrixcf CQ::getKernel() {
     return _kernel;
+}
+
+Vectorf CQ::getFilter() {
+    return _filter_kernel;
 }
