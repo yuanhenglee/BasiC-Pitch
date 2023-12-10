@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "constant.h"
 
 #include <iostream>
 #include <cmath>
@@ -190,4 +191,40 @@ int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride) 
     // padding == "same"
     float f = static_cast<float>(n_features_in) / static_cast<float>(stride);
     return std::ceil(f);
+}
+
+std::vector<Vectorf> getWindowedAudio( const Vectorf &x ) {
+
+    int audio_length = x.size();
+    int padded_length = std::ceil(static_cast<float>(audio_length) / static_cast<float>(WINDOW_HOP_SIZE)-1) * WINDOW_HOP_SIZE + AUDIO_N_SAMPLES;
+    // add padding to the audio signal
+    Vectorf padded_x = Vectorf::Zero(padded_length);
+    padded_x.segment(OVERLAP_LENGTH / 2, audio_length) = x;
+    
+    std::vector<Vectorf> result;
+    for ( int i = 0 ; i + AUDIO_N_SAMPLES <= padded_length ; i += WINDOW_HOP_SIZE ) {
+        Vectorf temp = padded_x.segment(i, AUDIO_N_SAMPLES);
+        result.emplace_back(temp);
+    }
+
+    return result;
+}
+
+Matrixf concatMatrices(const VecMatrixf &matrices, int audio_length ) {
+    int n_frames_original = std::floor(audio_length * (ANNOTATIONS_FPS * 1.0f /SAMPLE_RATE) );
+    int mat_height = matrices[0].rows() - N_OVERLAP_FRAMES;
+    int mat_width = matrices[0].cols();
+    Matrixf result = Matrixf::Zero( matrices.size() * mat_height, mat_width );
+    int start = 0;
+    for ( const Matrixf& m : matrices ) {
+        // remove half of the overlap frames from the beginning and the end
+        result.block(start, 0, 
+            mat_height, mat_width
+            ) = 
+            m.block(N_OVERLAP_FRAMES/2, 0, 
+            mat_height, mat_width
+        );
+        start += mat_height;
+    }
+    return result.block(0, 0, n_frames_original, mat_width);
 }

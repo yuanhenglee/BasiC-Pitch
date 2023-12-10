@@ -3,27 +3,6 @@
 #include <iostream>
 #include <string>
 
-// Conv2D::Conv2D(
-//     int n_filters_in,
-//     int n_filters_out,
-//     int n_features_in,
-//     int kernel_size_time,
-//     int kernel_size_feature,
-//     int stride
-// ) :
-//     _n_filters_in( n_filters_in ),
-//     _n_filters_out( n_filters_out ),
-//     _n_features_in( n_features_in ),
-//     _n_features_out( computeNFeaturesOut(n_features_in, kernel_size_feature, stride) ),
-//     _kernel_size_time( kernel_size_time ),
-//     _kernel_size_feature( kernel_size_feature ),
-//     _stride( stride ),
-//     Layer() {
-//     _input_size = _n_filters_in * _n_features_in;
-//     _output_size = _n_filters_out * _n_features_out;
-//     std::cout << get_name() << " constructor called" << std::endl;
-// }
-
 Conv2D::Conv2D( int& json_idx, const json& weights ) : Layer() {
     loadWeights( json_idx, weights );
 }
@@ -38,7 +17,7 @@ std::string Conv2D::get_name() const{
 }
 
 VecMatrixf Conv2D::forward( const VecMatrixf& input ) const{
-    std::cout << "\t" << get_name() << " forward pass" << std::endl;
+    // std::cout << "\t" << get_name() << " forward pass" << std::endl;
     int n_frames_in = input[0].rows();
     int n_frames_out = n_frames_in;
     VecMatrixf output(_n_filters_out, Matrixf::Zero(n_frames_out, _n_features_out));

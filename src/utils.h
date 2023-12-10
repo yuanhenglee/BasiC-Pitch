@@ -2,8 +2,7 @@
 
 #include "typedef.h"
 #include "CQT.h"
-
-#include <iostream>
+#include <vector>
 
 void printMat(Matrixf &mat);
 
@@ -22,7 +21,6 @@ void updateEDParams(CQParams &params);
 Vectorf conv1d(Vectorf &x, Vectorf &filter_kernel, int stride);
 
 Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride );
-// void conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride, Matrixf &output );
 
 Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n);
 
@@ -33,3 +31,7 @@ py::array_t<float> mat3D2pyarray(VecMatrixf &tensor);
 VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray);
 
 int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride);
+
+std::vector<Vectorf> getWindowedAudio(const Vectorf &x);
+
+Matrixf concatMatrices(const VecMatrixf &matrices, int audio_length);

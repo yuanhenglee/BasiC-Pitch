@@ -17,13 +17,12 @@ CNN::~CNN() {
 }
 
 VecMatrixf CNN::forward( const VecMatrixf& input ) const {
-    //TODO inplace forward??
-    std::cout << _model_name + " forward pass" << std::endl;
+    // std::cout << _model_name + " forward pass" << std::endl;
     VecMatrixf output = input;
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
         output = _layers[i]->forward( output );
     }
-    std::cout << "output size = " << output.size() << std::endl;
+    // std::cout << "output size = " << output.size() << std::endl;
     return output;
 }
 
