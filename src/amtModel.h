@@ -11,13 +11,14 @@ class amtModel {
 
         ~amtModel() = default;
 
+        // reset the model
+        void reset();
+
         // transcriibe audio
         Matrixf transcribeAudio( const Vectorf& audio );
 
         // inference API for Eigen IO
         void inferenceFrame( const Vectorf& x );
-
-        // concat buffer results
 
 
         // get the CQ object, just for testing
