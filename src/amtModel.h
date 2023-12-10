@@ -11,6 +11,9 @@ class amtModel {
 
         ~amtModel() = default;
 
+        // transcriibe audio
+        Matrixf transcribeAudio( const Vectorf& audio );
+
         // inference API for Eigen IO
         void inference( const Vectorf& x );
 

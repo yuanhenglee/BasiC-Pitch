@@ -36,4 +36,14 @@ inline const int N_SEMITONES = std::min(
     MAX_N_SEMITONES
 );
 
+inline constexpr int AUDIO_WINDOW_LENGTH = 2; // duration in seconds
+
+inline constexpr int AUDIO_N_SAMPLES = SAMPLE_RATE * AUDIO_WINDOW_LENGTH - FFT_HOP;
+
+inline constexpr int N_OVERLAP_FRAMES = 30;
+
+inline constexpr int OVERLAP_LENGTH = N_OVERLAP_FRAMES * FFT_HOP;
+
+inline constexpr int WINDOW_HOP_SIZE = AUDIO_N_SAMPLES - OVERLAP_LENGTH;
+
 #endif // CONSTANT_H

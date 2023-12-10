@@ -80,6 +80,7 @@ void bind_utils( py::module &m ) {
         printPyarray(output);
         return output;
     });
+    m_utils.def("getWindowedAudio", &getWindowedAudio);
 }
 
 // bind the CQParams class

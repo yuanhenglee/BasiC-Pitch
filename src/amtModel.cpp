@@ -1,4 +1,5 @@
 #include "amtModel.h"
+#include "utils.h"
 #include <iostream>
 
 amtModel::amtModel(): 
@@ -7,6 +8,15 @@ amtModel::amtModel():
     _onset_output_cnn("Onset Output"),
     _note_cnn("Note"),
     _contour_cnn("Contour") {}
+
+Matrixf amtModel::transcribeAudio( const Vectorf& audio ) {
+    auto audio_windowed = getWindowedAudio(audio);
+    for ( Vectorf& x : audio_windowed ) {
+        inference(x);
+        // TODO : convert model output into single matrix
+    }
+    return Matrixf::Zero(1, 1);
+}
 
 void amtModel::inference( const Vectorf& x ) {
     // compute harmonic stacking, shape : (n_harmonics, n_frames, n_bins)
