@@ -57,11 +57,11 @@ void bind_cnn( py::module &m ) {
 void bind_amtModel( py::module &m ) {
     py::class_<amtModel>(m, "amtModel")
         .def(py::init<>())
-        .def("inference", &amtModel::inference)
-        .def("getCQ", &amtModel::getCQ)
-        .def("getYo", &amtModel::getYo)
-        .def("getYp", &amtModel::getYp)
-        .def("getYn", &amtModel::getYn);
+        .def("inference", [] ( amtModel &model, Vectorf &x ) {
+            model.transcribeAudio(x);
+            return model.getOutput();
+        })
+        ;
 }
 
 

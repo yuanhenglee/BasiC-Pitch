@@ -33,3 +33,5 @@ VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray);
 int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride);
 
 std::vector<Vectorf> getWindowedAudio(const Vectorf &x);
+
+Matrixf concatMatrices(const VecMatrixf &matrices, int audio_length);

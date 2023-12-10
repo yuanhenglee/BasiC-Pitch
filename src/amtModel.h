@@ -15,17 +15,18 @@ class amtModel {
         Matrixf transcribeAudio( const Vectorf& audio );
 
         // inference API for Eigen IO
-        void inference( const Vectorf& x );
+        void inferenceFrame( const Vectorf& x );
+
+        // concat buffer results
+
 
         // get the CQ object, just for testing
         CQ getCQ() { return _cqt; }
 
-        Matrixf getYo() { return _Yo; }
+        // get the buffer for Yp, Yn, Yo
+        VecVecMatrixf getBuffer() { return {_Yp_buffer, _Yn_buffer, _Yo_buffer};}
 
-        Matrixf getYp() { return _Yp; }
-
-        Matrixf getYn() { return _Yn; }
-
+        VecMatrixf getOutput();
 
     private:
 
@@ -43,15 +44,12 @@ class amtModel {
         // CNN for contour detection
         CNN _contour_cnn;
 
-        // Buffer for storing the concat of onset and note output
-        Matrixf _Yo;
+        // Buffer for Yp, Yn, Yo
+        VecMatrixf _Yp_buffer;
+        VecMatrixf _Yn_buffer;
+        VecMatrixf _Yo_buffer;
 
-        // Buffer for storing the contour output
-        Matrixf _Yp;
-
-        // Buffer for storing the note output
-        Matrixf _Yn;
-
+        int _audio_len;
 };
 
 

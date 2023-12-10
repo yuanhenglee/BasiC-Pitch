@@ -38,6 +38,8 @@ inline const int N_SEMITONES = std::min(
 
 inline constexpr int AUDIO_WINDOW_LENGTH = 2; // duration in seconds
 
+inline constexpr int ANNOTATIONS_FPS = SAMPLE_RATE / FFT_HOP;
+
 inline constexpr int AUDIO_N_SAMPLES = SAMPLE_RATE * AUDIO_WINDOW_LENGTH - FFT_HOP;
 
 inline constexpr int N_OVERLAP_FRAMES = 30;
