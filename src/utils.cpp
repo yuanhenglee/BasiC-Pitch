@@ -195,11 +195,12 @@ int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride) 
 
 std::vector<Vectorf> getWindowedAudio( const Vectorf &x ) {
 
-    int audio_length = x.size();
-    int padded_length = std::ceil(static_cast<float>(audio_length) / static_cast<float>(WINDOW_HOP_SIZE)-1) * WINDOW_HOP_SIZE + AUDIO_N_SAMPLES;
+    int audio_length = x.size() + OVERLAP_LENGTH / 2;
+    int n_windows = std::ceil(static_cast<float>(audio_length) / static_cast<float>(WINDOW_HOP_SIZE));
+    int padded_length = (n_windows - 1) * WINDOW_HOP_SIZE + AUDIO_N_SAMPLES;
     // add padding to the audio signal
     Vectorf padded_x = Vectorf::Zero(padded_length);
-    padded_x.segment(OVERLAP_LENGTH / 2, audio_length) = x;
+    padded_x.segment(OVERLAP_LENGTH / 2, x.size()) = x;
     
     std::vector<Vectorf> result;
     for ( int i = 0 ; i + AUDIO_N_SAMPLES <= padded_length ; i += WINDOW_HOP_SIZE ) {
