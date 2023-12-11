@@ -37,6 +37,15 @@ def plot_hm( datas ):
     plt.tight_layout()
     plt.savefig("./tests/model_output.png")
 
+def print_distribution( datas ):
+    for k, v in datas.items():
+        print(k, v.shape)
+        print("min", v.min())
+        print("max", v.max())
+        print("mean", v.mean())
+        print("std", v.std())
+        print("")
+
 def test_inference(vis = False):
     import BasiCPP_Pitch
     import time
@@ -68,8 +77,7 @@ def test_inference(vis = False):
     for k, v in gold.items():
         plot_dict["Baseline " + k] = v
 
-    for k, v in plot_dict.items():
-        print(k, v.shape)
+    print_distribution(plot_dict)
 
     for output in ["onset", "contour", "note"]:
         assert plot_dict["Baseline " + output].shape == plot_dict["Ours " + output].shape
