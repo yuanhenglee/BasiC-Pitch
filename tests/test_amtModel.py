@@ -67,12 +67,13 @@ def test_inference(vis = False):
     for k, v in plot_dict.items():
         print(k, v.shape)
 
-    # for output in ["onset", "contour", "note"]:
-    #     assert plot_dict["Baseline " + output].shape == plot_dict["Ours " + output].shape
+    for output in ["onset", "contour", "note"]:
+        assert plot_dict["Baseline " + output].shape == plot_dict["Ours " + output].shape
 
     if vis:
         plot_hm(plot_dict)
 
 
 if __name__ == "__main__":
-    test_inference(vis=True)
+    # test_inference(vis=True)
+    test_amtModelCQ()
