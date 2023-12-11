@@ -108,7 +108,7 @@ VecMatrixf ReLU::forward( const VecMatrixf& input ) const{
 }
 
 std::string Sigmoid::get_name() const{
-    return "Sigmoide";
+    return "Sigmoid";
 }
 
 VecMatrixf Sigmoid::forward( const VecMatrixf& input ) const{
