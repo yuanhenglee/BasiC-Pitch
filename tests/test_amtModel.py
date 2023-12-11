@@ -37,41 +37,41 @@ def plot_hm( datas ):
     plt.tight_layout()
     plt.savefig("./tests/model_output.png")
 
-def test_inference(vis = False):
-    import BasiCPP_Pitch
-    import time
+# def test_inference(vis = False):
+#     import BasiCPP_Pitch
+#     import time
 
-    plot_dict = {}
+#     plot_dict = {}
 
-    bp_model = BasiCPP_Pitch.amtModel()
-    np_arr = get_audio()
-    start_time = time.time()
-    Yp, Yn, Yo = bp_model.inference(np_arr)
-    print(f"Elapsed time: {time.time() - start_time}")
-    plot_dict['Ours contour'] = np.array(Yp)
-    plot_dict['Ours note'] = np.array(Yn)
-    plot_dict['Ours onset'] = np.array(Yo)
+#     bp_model = BasiCPP_Pitch.amtModel()
+#     np_arr = get_audio()
+#     start_time = time.time()
+#     Yp, Yn, Yo = bp_model.inference(np_arr)
+#     print(f"Elapsed time: {time.time() - start_time}")
+#     plot_dict['Ours contour'] = np.array(Yp)
+#     plot_dict['Ours note'] = np.array(Yn)
+#     plot_dict['Ours onset'] = np.array(Yo)
 
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        start_time = time.time()
-        from basic_pitch.inference import run_inference
-        from basic_pitch.models import model
-        m = model()
-        gold = run_inference("data/Undertale-Megalovania.wav", m)
-    print(f"Elapsed time: {time.time() - start_time}")
-    for k, v in gold.items():
-        plot_dict["Baseline " + k] = v
+#     import warnings
+#     with warnings.catch_warnings():
+#         warnings.simplefilter("ignore")
+#         start_time = time.time()
+#         from basic_pitch.inference import run_inference
+#         from basic_pitch.models import model
+#         m = model()
+#         gold = run_inference("data/Undertale-Megalovania.wav", m)
+#     print(f"Elapsed time: {time.time() - start_time}")
+#     for k, v in gold.items():
+#         plot_dict["Baseline " + k] = v
 
-    for k, v in plot_dict.items():
-        print(k, v.shape)
+#     for k, v in plot_dict.items():
+#         print(k, v.shape)
 
-    for output in ["onset", "contour", "note"]:
-        assert plot_dict["Baseline " + output].shape == plot_dict["Ours " + output].shape
+#     for output in ["onset", "contour", "note"]:
+#         assert plot_dict["Baseline " + output].shape == plot_dict["Ours " + output].shape
 
-    if vis:
-        plot_hm(plot_dict)
+#     if vis:
+#         plot_hm(plot_dict)
 
 
 if __name__ == "__main__":

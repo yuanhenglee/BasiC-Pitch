@@ -16,7 +16,7 @@ void amtModel::reset() {
     _Yo_buffer.clear();
 }
 
-Matrixf amtModel::transcribeAudio( const Vectorf& audio ) {
+std::vector<Note> amtModel::transcribeAudio( const Vectorf& audio ) {
     _audio_len = audio.size();
     auto audio_windowed = getWindowedAudio(audio);
     for ( Vectorf& x : audio_windowed ) {
@@ -29,9 +29,7 @@ Matrixf amtModel::transcribeAudio( const Vectorf& audio ) {
     Matrixf Yo = concatMatrices(_Yo_buffer, _audio_len);
 
     // convert to midi note events
-    //TODO : implement this
-
-    return Matrixf::Zero(1, 1);
+    return modelOutput2Notes(Yp, Yn, Yo);
 }
 
 // input shape : (N_AUDIO_SAMPLES, N_BIN_CONTORU )

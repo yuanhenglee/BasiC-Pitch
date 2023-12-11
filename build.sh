@@ -33,3 +33,4 @@ cmake ..
 make
 cd ..
 cp lib/*.so tests/
+cp lib/*.so python/

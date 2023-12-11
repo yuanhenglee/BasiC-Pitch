@@ -40,12 +40,33 @@ inline constexpr int AUDIO_WINDOW_LENGTH = 2; // duration in seconds
 
 inline constexpr int ANNOTATIONS_FPS = SAMPLE_RATE / FFT_HOP;
 
+// ANNOT_N_TIME_FRAMES is the number of frames in the time-frequency representations we compute
+inline constexpr int ANNOT_N_FRAMES = ANNOTATIONS_FPS * AUDIO_WINDOW_LENGTH;
+
 inline constexpr int AUDIO_N_SAMPLES = SAMPLE_RATE * AUDIO_WINDOW_LENGTH - FFT_HOP;
+
+// Windowing parameters
 
 inline constexpr int N_OVERLAP_FRAMES = 30;
 
 inline constexpr int OVERLAP_LENGTH = N_OVERLAP_FRAMES * FFT_HOP;
 
 inline constexpr int WINDOW_HOP_SIZE = AUDIO_N_SAMPLES - OVERLAP_LENGTH;
+
+// Annotations parameters
+
+inline constexpr float ONSET_THRESHOLD = 0.5f;
+
+inline constexpr float FRAME_THRESHOLD = 0.3f;
+
+inline constexpr int ENERGY_THRESHOLD = 11;
+
+inline constexpr int MIN_NOTE_LENGTH = 11;
+
+inline constexpr int MIDI_OFFSET = 21;
+
+// 0.0018 is a magic number, but it's needed for this to align properly
+inline constexpr float WINDOW_OFFSET = static_cast<float>(FFT_HOP) / SAMPLE_RATE \
+     * (ANNOT_N_FRAMES - (AUDIO_N_SAMPLES * 1.0f / FFT_HOP)) + 0.0018f;
 
 #endif // CONSTANT_H

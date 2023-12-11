@@ -9,6 +9,12 @@
 void bind_note( py::module &m ) {
     auto m_note = m.def_submodule("note");
     m_note.def("getInferedOnsets", &getInferedOnsets);
+    py::class_<Note>(m_note, "Note")
+        .def_readwrite("start", &Note::start_time)
+        .def_readwrite("end", &Note::end_time)
+        .def_readwrite("pitch", &Note::pitch)
+        .def_readwrite("amplitude", &Note::amplitude)
+        ;
 }
 
 void bind_layer( py::module &m ) {
@@ -63,10 +69,11 @@ void bind_cnn( py::module &m ) {
 void bind_amtModel( py::module &m ) {
     py::class_<amtModel>(m, "amtModel")
         .def(py::init<>())
-        .def("inference", [] ( amtModel &model, Vectorf &x ) {
-            model.transcribeAudio(x);
-            return model.getOutput();
-        })
+        .def("transcribeAudio", &amtModel::transcribeAudio)
+        // .def("inference", [] ( amtModel &model, Vectorf &x ) {
+        //     model.transcribeAudio(x);
+        //     return model.getOutput();
+        // })
         .def("getCQ", &amtModel::getCQ)
         ;
 }
