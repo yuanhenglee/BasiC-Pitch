@@ -70,6 +70,7 @@ void bind_amtModel( py::module &m ) {
     py::class_<amtModel>(m, "amtModel")
         .def(py::init<>())
         .def("transcribeAudio", &amtModel::transcribeAudio)
+        .def("getOutput", &amtModel::getOutput)
         // .def("inference", [] ( amtModel &model, Vectorf &x ) {
         //     model.transcribeAudio(x);
         //     return model.getOutput();

@@ -17,6 +17,10 @@ void amtModel::reset() {
 }
 
 std::vector<Note> amtModel::transcribeAudio( const Vectorf& audio ) {
+
+    // reset the model
+    reset();
+
     _audio_len = audio.size();
     auto audio_windowed = getWindowedAudio(audio);
     for ( Vectorf& x : audio_windowed ) {
