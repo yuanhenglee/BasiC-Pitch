@@ -55,9 +55,9 @@ inline constexpr int WINDOW_HOP_SIZE = AUDIO_N_SAMPLES - OVERLAP_LENGTH;
 
 // Annotations parameters
 
-inline constexpr float ONSET_THRESHOLD = 0.5f;
+inline constexpr float ONSET_THRESHOLD = 0.25f;
 
-inline constexpr float FRAME_THRESHOLD = 0.3f;
+inline constexpr float FRAME_THRESHOLD = 0.15f;
 
 inline constexpr int ENERGY_THRESHOLD = 11;
 

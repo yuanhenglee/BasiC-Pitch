@@ -43,6 +43,7 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
                     k++;
                 else
                     k = 0;
+                ++i;
             }
             i -= k; // go back to frame above threshold
 
