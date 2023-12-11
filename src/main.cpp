@@ -4,6 +4,18 @@
 #include "layer.h"
 #include "cnn.h"
 #include "amtModel.h"
+#include "note.h"
+
+void bind_note( py::module &m ) {
+    auto m_note = m.def_submodule("note");
+    m_note.def("getInferedOnsets", &getInferedOnsets);
+    py::class_<Note>(m_note, "Note")
+        .def_readwrite("start", &Note::start_time)
+        .def_readwrite("end", &Note::end_time)
+        .def_readwrite("pitch", &Note::pitch)
+        .def_readwrite("amplitude", &Note::amplitude)
+        ;
+}
 
 void bind_layer( py::module &m ) {
     auto m_layer = m.def_submodule("layer");
@@ -57,10 +69,13 @@ void bind_cnn( py::module &m ) {
 void bind_amtModel( py::module &m ) {
     py::class_<amtModel>(m, "amtModel")
         .def(py::init<>())
-        .def("inference", [] ( amtModel &model, Vectorf &x ) {
-            model.transcribeAudio(x);
-            return model.getOutput();
-        })
+        .def("transcribeAudio", &amtModel::transcribeAudio)
+        .def("getOutput", &amtModel::getOutput)
+        // .def("inference", [] ( amtModel &model, Vectorf &x ) {
+        //     model.transcribeAudio(x);
+        //     return model.getOutput();
+        // })
+        .def("getCQ", &amtModel::getCQ)
         ;
 }
 
@@ -122,10 +137,11 @@ void bind_CQ( py::module &m ) {
 
 PYBIND11_MODULE(BasiCPP_Pitch, m) {
     m.doc() = "BasiCPP_Pitch: A C++ implementation of the pitch detection algorithm";
-    bind_layer(m);
-    bind_cnn(m);
     bind_amtModel(m);
-    bind_utils(m);
     bind_CQParams(m);
     bind_CQ(m);
+    bind_layer(m);
+    bind_cnn(m);
+    bind_note(m);
+    bind_utils(m);
 }

@@ -3,6 +3,7 @@
 #include "typedef.h"
 #include "CQT.h"
 #include "cnn.h"
+#include "note.h"
 
 class amtModel {
     public:
@@ -11,13 +12,14 @@ class amtModel {
 
         ~amtModel() = default;
 
+        // reset the model
+        void reset();
+
         // transcriibe audio
-        Matrixf transcribeAudio( const Vectorf& audio );
+        std::vector<Note> transcribeAudio( const Vectorf& audio );
 
         // inference API for Eigen IO
         void inferenceFrame( const Vectorf& x );
-
-        // concat buffer results
 
 
         // get the CQ object, just for testing

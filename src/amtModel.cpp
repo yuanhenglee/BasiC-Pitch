@@ -9,14 +9,31 @@ amtModel::amtModel():
     _note_cnn("Note"),
     _contour_cnn("Contour") {}
 
-Matrixf amtModel::transcribeAudio( const Vectorf& audio ) {
+void amtModel::reset() {
+    _audio_len = 0;
+    _Yp_buffer.clear();
+    _Yn_buffer.clear();
+    _Yo_buffer.clear();
+}
+
+std::vector<Note> amtModel::transcribeAudio( const Vectorf& audio ) {
+
+    // reset the model
+    reset();
+
     _audio_len = audio.size();
     auto audio_windowed = getWindowedAudio(audio);
     for ( Vectorf& x : audio_windowed ) {
         inferenceFrame(x);
-        // TODO : convert model output into single matrix
     }
-    return Matrixf::Zero(1, 1);
+
+    // concat 3 buffers
+    Matrixf Yp = concatMatrices(_Yp_buffer, _audio_len);
+    Matrixf Yn = concatMatrices(_Yn_buffer, _audio_len);
+    Matrixf Yo = concatMatrices(_Yo_buffer, _audio_len);
+
+    // convert to midi note events
+    return modelOutput2Notes(Yp, Yn, Yo);
 }
 
 // input shape : (N_AUDIO_SAMPLES, N_BIN_CONTORU )
