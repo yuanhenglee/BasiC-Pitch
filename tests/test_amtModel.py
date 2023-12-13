@@ -77,13 +77,14 @@ def test_inference(vis = False):
     for k, v in gold.items():
         plot_dict["Baseline " + k] = v
 
-    print_distribution(plot_dict)
+    # print_distribution(plot_dict)
 
     for output in ["onset", "contour", "note"]:
         assert plot_dict["Baseline " + output].shape == plot_dict["Ours " + output].shape
+        assert np.allclose(plot_dict["Baseline " + output], plot_dict["Ours " + output], atol=1e-3)
 
-    if vis:
-        plot_hm(plot_dict)
+    # if vis:
+    #     plot_hm(plot_dict)
 
 
 if __name__ == "__main__":

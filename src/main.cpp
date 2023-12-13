@@ -126,13 +126,13 @@ void bind_CQParams( py::module &m ) {
 void bind_CQ( py::module &m ) {
     py::class_<CQ>(m, "CQ")
         .def(py::init<>())
-        .def("computeCQT", &CQ::cqtEigen)
+        .def("computeCQT", &CQ::computeCQT, py::arg("x"), py::arg("batch_norm") = false)
         .def("getKernel", &CQ::getKernel)
         .def("getFilter", &CQ::getFilter)
-        .def("harmonicStacking", [] ( CQ &cq, Vectorf &x ) {
-            VecMatrixf output_tensor = cq.cqtHarmonic(x);
+        .def("harmonicStacking", [] ( CQ &cq, Vectorf &x, bool batch_norm ) {
+            VecMatrixf output_tensor = cq.cqtHarmonic(x, batch_norm);
             return mat3D2pyarray(output_tensor);
-        });
+        }, py::arg("x"), py::arg("batch_norm") = false);
 }
 
 PYBIND11_MODULE(BasiCPP_Pitch, m) {

@@ -41,10 +41,11 @@ class CQ {
         ~CQ();
 
         // compute cqt API for Eigen IO
-        Matrixf cqtEigen(const Vectorf& x);
+        // Matrixf cqtEigen(const Vectorf& x);
+        Matrixf computeCQT(const Vectorf& x, bool batch_norm);
 
         // Return the cqt feature with harmonic stacking, for vector of matrix IO
-        VecMatrixf cqtHarmonic(const Vectorf& x);
+        VecMatrixf cqtHarmonic(const Vectorf& x, bool batch_norm);
 
         // get the kernel matrix, just for testing
         Matrixcf getKernel();

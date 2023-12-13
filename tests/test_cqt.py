@@ -9,7 +9,7 @@ def plot_cqt( results, filename='cqt.png' ):
     for i, (name, arr) in enumerate(results.items()):
         plt.subplot(len(results), 1, i + 1)
         plt.title(name)
-        plt.pcolor(arr, cmap='coolwarm', vmin=0, vmax=1)
+        plt.imshow(arr, cmap='coolwarm', vmin=0, vmax=1)
     plt.tight_layout()
     plt.savefig(os.path.join(os.path.dirname(__file__), filename))
 
@@ -38,7 +38,7 @@ def test_harmonic_stacking(vis = False):
     np_arr = get_audio(shorten=False)
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
     t = BasiCPP_Pitch.CQ()
-    res = t.harmonicStacking(np_arr).transpose(0, 2, 1)
+    res = t.harmonicStacking(np_arr, batch_norm = False).transpose(0, 2, 1)
     print(res.shape)
 
     # supress warning
@@ -59,7 +59,7 @@ def test_harmonic_stacking(vis = False):
         gold = x.numpy().squeeze().transpose(2, 1, 0)
     print(gold.shape)
 
-    assert np.allclose(res, gold, atol=1e-2)
+    assert np.allclose(res, gold, atol=1e-3)
 
     if vis:
         plot_hs({
@@ -75,7 +75,7 @@ def test_cqt(vis = False):
     np_arr = np.ascontiguousarray(np_arr, dtype=np.float32)
 
     t = BasiCPP_Pitch.CQ()
-    res = t.computeCQT(np_arr)
+    res = t.computeCQT(np_arr, batch_norm=False)
     print(res.shape)
 
     # supress warning
@@ -89,8 +89,8 @@ def test_cqt(vis = False):
         gold = get_cqt(audio, 8, False).numpy().squeeze().T
     print(gold.shape)
 
-    assert np.allclose(res, gold, atol=1e-2)
-
+    assert np.allclose(res, gold, atol=1e-3)
+    
     if vis:
         plot_cqt({
             'Baseline': gold,
