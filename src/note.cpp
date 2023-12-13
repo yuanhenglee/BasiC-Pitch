@@ -15,11 +15,6 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
     Matrixf infered_Yo = getInferedOnsets( Yn, Yo );
     Matrixf remaining_energy(Yn);
 
-    // check disribution of infered_Yo
-    std::cout<<"infered_Yo mean: "<<infered_Yo.mean()<<std::endl;
-    std::cout<<"infered_Yo max: "<<infered_Yo.maxCoeff()<<std::endl;
-    std::cout<<"infered_Yo min: "<<infered_Yo.minCoeff()<<std::endl;
-
     // loop over onsets, go backwards in time
     // skip the last frame as line 399 in basic_pitch/note_creation.py
     for ( int start_idx = n_frames -2 ; start_idx >= 0 ; --start_idx ) {

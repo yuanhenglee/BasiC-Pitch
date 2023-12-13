@@ -138,7 +138,8 @@ VecMatrixf CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std:
 }
 
 
-Matrixf CQ::cqtEigen(const Vectorf& audio) {
+// Matrixf CQ::cqtEigen(const Vectorf& audio) {
+Matrixf CQ::computeCQT(const Vectorf& audio, bool batch_norm) {
     // NOTE : input audio should be 1D array at this point
     int hop = params.sample_per_frame;
     int n_fft_x = audio.size() / hop + 1;
@@ -172,13 +173,24 @@ Matrixf CQ::cqtEigen(const Vectorf& audio) {
     Matrixf log_power = 10.0f * power.array().log10();
     log_power = (log_power.array() - log_power.minCoeff()) / (log_power.maxCoeff() - log_power.minCoeff());
 
+    // batch normalization
+    if ( batch_norm) {
+        constexpr float gamma = 0.48823851346969604;
+        constexpr float beta = 0.3687160313129425;
+        constexpr float mean = 0.5021218657493591;
+        constexpr float var = 0.03773479163646698;
+
+        log_power = (log_power.array() - mean) * gamma / sqrt(var + 0.001f) + beta;
+    }
+
     return log_power;
 }
 
 // Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
-VecMatrixf CQ::cqtHarmonic(const Vectorf& audio) {
+VecMatrixf CQ::cqtHarmonic(const Vectorf& audio, bool batch_norm) {
 
-    Matrixf cqt_feat = cqtEigen(audio);
+    // Matrixf cqt_feat = cqtEigen(audio);
+    Matrixf cqt_feat = computeCQT(audio, batch_norm);
 
     std::vector<float> harmonics = {0.5};
     for ( int i = 1 ; i < N_HARMONICS ; i++ ) {

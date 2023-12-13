@@ -41,7 +41,7 @@ void amtModel::inferenceFrame( const Vectorf& x ) {
     VecMatrixf output;
 
     // compute harmonic stacking, shape : (n_harmonics, n_frames, n_bins)
-    VecMatrixf cqt = _cqt.cqtHarmonic(x);
+    VecMatrixf cqt = _cqt.cqtHarmonic(x, true);
 
     VecMatrixf contour_out = _contour_cnn.forward(cqt);
     _Yp_buffer.push_back(contour_out[0]); // Yp

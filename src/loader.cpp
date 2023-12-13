@@ -66,6 +66,17 @@ void loadCNNModel( std::vector<Layer*>& layers, std::string model_name ) {
                 }
             }
         }
+        else if ( layer_type == "relu") {
+            layers.emplace_back(new ReLU());
+            json_idx++;
+        }
+        else if ( layer_type == "sigmoid") {
+            layers.emplace_back(new Sigmoid());
+            json_idx++;
+        }
+        else if ( layer_type == "batchnorm2d" ) {
+            layers.emplace_back(new BatchNorm(json_idx, layer_json));
+        }
         else {
             std::cout << "Unknown layer type: " << layer_type << std::endl;
         }

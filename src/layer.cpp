@@ -43,8 +43,6 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
     _kernel_size_feature = w_json["kernel_size_feature"].get<int>();
     _stride = w_json["strides"].get<int>();
     _n_features_out = computeNFeaturesOut(_n_features_in, _kernel_size_feature, _stride);
-    _input_size = _n_filters_in * _n_features_in;
-    _output_size = _n_filters_out * _n_features_out;
 
     // shape of the Tensorflow weights json: ( kernel_size_time, kernel_size_feature, n_filters_in, n_filters_out )
     // shape of _weights: ( n_filters_in, n_filters_out, kernel_size_time, kernel_size_feature )
@@ -110,7 +108,7 @@ VecMatrixf ReLU::forward( const VecMatrixf& input ) const{
 }
 
 std::string Sigmoid::get_name() const{
-    return "Sigmoide";
+    return "Sigmoid";
 }
 
 VecMatrixf Sigmoid::forward( const VecMatrixf& input ) const{
@@ -127,4 +125,37 @@ VecMatrixf Sigmoid::forward( const VecMatrixf& input ) const{
                 }
             }
     return output;
+}
+
+BatchNorm::BatchNorm( int& json_idx, const json& weights ) : Layer() {
+    loadWeights( json_idx, weights );
+}
+
+std::string BatchNorm::get_name() const{
+    return "BatchNorm";
+}
+
+VecMatrixf BatchNorm::forward( const VecMatrixf& input ) const{
+    VecMatrixf output(input);
+    for ( int i = 0 ; i < input.size() ; i++ ) {
+        output[i] = (input[i].array() - _mean[i]) * _multiplier[i] + _beta[i];
+    }
+    return output;
+}
+
+void BatchNorm::loadWeights( int& json_idx, const json& w_json ){
+    
+    const json& weights = w_json["weights"];
+    _gamma = weights.at(0).get<std::vector<float>>();
+    _beta = weights.at(1).get<std::vector<float>>();
+    _mean = weights.at(2).get<std::vector<float>>();
+    _variance = weights.at(3).get<std::vector<float>>();
+    
+    // calculate multiplier
+    _multiplier.resize(_gamma.size());
+    for ( int i = 0 ; i < _gamma.size() ; i++ ) {
+        _multiplier[i] = _gamma[i] / std::sqrt(_variance[i] + 0.001f);
+    }
+
+    json_idx++;
 }
