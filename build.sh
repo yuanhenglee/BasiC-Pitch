@@ -3,18 +3,18 @@
 python="OFF"
 exe="OFF"
 test="OFF"
-while getopts ":pet" "opt"; do
+gprofile="OFF"
+while getopts ":petg" "opt"; do
     case ${opt} in
-        "p" ) python="ON"
-            ;;
-        "e" ) exe="ON"
-            ;;
-        "t" ) test="ON"
-            ;;
+        "p" ) python="ON" ;;
+        "e" ) exe="ON" ;;
+        "t" ) test="ON" ;;
+        "g" ) gprofile="ON";;
         * ) echo "Usage: cmd [-p] [-e]"
             echo "  -p: build python module"
             echo "  -e: build executable"
             echo "  -t: run tests, only valid when python module is built"
+            echo "  -g: enable gprof profiling"
             exit 1
             ;;
     esac
@@ -61,14 +61,19 @@ fi
 
 mkdir build
 cd build
-# cmake .. -D BUILD_PY=ON -D BUILD_EXE=ON
-cmake .. -D BUILD_PY=${python} -D BUILD_EXE=${exe}
+cmake .. -D BUILD_PY=${python} -D BUILD_EXE=${exe} -D GPROF=${gprofile}
 make
 cd ..
+
 if [ ${python} == "ON" ]; then
     cp build/lib/*.so python/
     cp lib/*.so tests/
     if [ ${test} == "ON" ]; then
         pytest
     fi
+fi
+
+# if executable is built and gprof is enabled, run the executable and generate profiling report
+if [ ${exe} == "ON" ] && [ ${gprofile} == "ON" ]; then
+    ./bin/run && gprof bin/run gmon.out > ./log/profiling.txt
 fi

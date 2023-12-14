@@ -9,6 +9,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(LDFLAGS "-O3 -fopenmp -fno-math-errno -march=native -DNDEBUG -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
 
+if ( GPROF )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+endif()
+
 # cnpy
 set( CNPY_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/cnpy )
 include_directories(${CNPY_ROOT})
@@ -16,11 +20,6 @@ include_directories(${CNPY_ROOT})
 # nlohmann json
 set( JSON_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/nlohmann-json )
 include_directories(${JSON_ROOT})
-
-# fftw
-# set(FFTW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/fftw-3.3.10/build )
-# link_libraries(${FFTW_ROOT}/lib/libfftw3f.so)
-# include_directories(${FFTW_ROOT}/include)
 
 # Eigen
 set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
