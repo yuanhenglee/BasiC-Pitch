@@ -38,6 +38,15 @@ Usage: cmd [-p] [-e]
   -g: enable gprof profiling
 ```
 
+## Run the example
+
+```bash
+# C++ example
+./bin/run
+# Python example
+python3 python/run.py
+```
+
 ## Problem to Solve
 
 In music information retrieval (MIR), Automatic Music Transcription (AMT) aims
@@ -108,46 +117,39 @@ developers to integrate the AMT capabilities into their applications.
 ### C++ Example
 
 ```cpp
-#include "BasiCPP_Pitch.h" // Include the BasiCPP Pitch header file
+#include "amtModel.h"
+#include "loader.h"
 
-int main() {
-    // Initialize BasiCPP Pitch
-    BasiCPP_Pitch amt;
+int main(int argc, char** argv) {
+    
+    auto audio = getExampleAudio();
 
-    // Specify the input audio file path
-    std::string audioFilePath = "path/to/audio/file.wav";
+    auto model = amtModel();
 
-    // Specify the output MIDI file path
-    std::string midiFilePath = "output/file.mid";
-
-    // Transcribe the audio and generate the MIDI file
-    amt.transcribeAudio(audioFilePath, midiFilePath);
+    auto notes = model.transcribeAudio(audio);
 
     return 0;
 }
 ```
+See `src/main.cpp` for more details.
 
 ### Python Example
 
 ```python
-import basicpp_pitch # Import the BasiCPP Pitch Python module
+import BasiCPP_Pitch
 
-def main():
-    # Initialize BasiCPP Pitch
-    amt = basicpp_pitch.BasiCPP_Pitch()
+# Load the example audio
+audio = getExampleAudio()
 
-    # Specify the input audio file path
-    audio_file_path = "path/to/audio/file.wav"
+# Initialize the model
+model = BasiCPP_Pitch.amtModel()
 
-    # Specify the output MIDI file path
-    midi_file_path = "output/file.mid"
-
-    # Transcribe the audio and generate the MIDI file
-    amt.transcribe_audio(audio_file_path, midi_file_path)
-
-if __name__ == "__main__":
-    main()
+# Transcribe the audio and generate the MIDI file
+notes = model.transcribeAudio(audio)
+midi = note2midi(notes)
+midi.write(midi_file_path)
 ```
+See `python/run.py` for more details.
 
 ## Engineering Infrastructure
 
