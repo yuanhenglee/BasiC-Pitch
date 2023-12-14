@@ -35,6 +35,7 @@ Usage: cmd [-p] [-e]
   -p: build python module
   -e: build executable
   -t: run tests, only valid when python module is built
+  -g: enable gprof profiling
 ```
 
 ## Problem to Solve
