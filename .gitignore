@@ -4,6 +4,9 @@
 tests/.pytest_cache/
 tests/__pycache__/
 
+# bin folder
+bin/
+
 # lib folder
 lib/
 
