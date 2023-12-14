@@ -1,5 +1,37 @@
 #!/bin/bash
 
+python="OFF"
+exe="OFF"
+test="OFF"
+while getopts ":pet" "opt"; do
+    case ${opt} in
+        "p" ) python="ON"
+            ;;
+        "e" ) exe="ON"
+            ;;
+        "t" ) test="ON"
+            ;;
+        * ) echo "Usage: cmd [-p] [-e]"
+            echo "  -p: build python module"
+            echo "  -e: build executable"
+            echo "  -t: run tests, only valid when python module is built"
+            exit 1
+            ;;
+    esac
+done
+
+# Build both by default
+if [ ${python} == "OFF" ] && [ ${exe} == "OFF" ]; then
+    python="ON"
+    exe="ON"
+fi
+if [ ${python} == "ON" ]; then
+    echo "Building python module"
+fi
+if [ ${exe} == "ON" ]; then
+    echo "Building executable"
+fi
+
 ./clean.sh
 if [ ! -d "src/ext/eigen-3.3.7" ]; then
     if [ ! -f "src/ext/eigen-3.3.7.tar.gz" ]; then
@@ -29,8 +61,14 @@ fi
 
 mkdir build
 cd build
-cmake ..
+# cmake .. -D BUILD_PY=ON -D BUILD_EXE=ON
+cmake .. -D BUILD_PY=${python} -D BUILD_EXE=${exe}
 make
 cd ..
-cp lib/*.so tests/
-cp lib/*.so python/
+if [ ${python} == "ON" ]; then
+    cp build/lib/*.so python/
+    cp lib/*.so tests/
+    if [ ${test} == "ON" ]; then
+        pytest
+    fi
+fi

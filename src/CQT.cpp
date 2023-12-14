@@ -53,46 +53,6 @@ CQ::CQ() : params(CQParams(true)) {
 
 CQ::~CQ() = default;
 
-// decrepated, load precomputed kernel instead
-void CQ::computeKernel() {
-    int _n_bins = std::min(params.bins_per_octave, params.n_bins);
-    _kernel = Matrixcf::Zero(_n_bins, params.fft_window_size);
-    _lengths = Vectorf::Zero(_n_bins);
-    
-    Eigen::FFT<float> fft;
-
-    // Calculate the _kernel for each frequency bin
-    for ( int i = 0 ; i < _n_bins ; i++ ) {
-
-        float freq = params.fmin_t * pow(2.0f, static_cast<float>(i) / params.bins_per_octave);
-
-        int _l = ceil(params.quality_factor * params.sample_rate / freq);
-        _lengths[i] = _l;
-        
-        int start = static_cast<int>(ceil( params.fft_window_size / 2.0f - _l / 2.0f)) - (_l%2);
-        
-        Vectorcf temporal_kernel = Vectorcf::Zero(_l);
-
-        Vectorcf fft_window = getHann(_l);
-
-        for ( int j = 0 ; j < _l ; j++ ) {
-            temporal_kernel[j] = fft_window[j];
-            std::complex<float> temp = std::complex<float>(
-                0.0f, 2.0f * M_PI * (j - (_l-1)/2 ) * freq / params.sample_rate
-            );
-            temporal_kernel[j] *= std::exp(temp);
-            temporal_kernel[j] /= _l;
-        }
-
-        _kernel.block(i, start, 1, _l) = temporal_kernel;
-    }
-
-    for ( int i = 0 ; i < _n_bins ; i++ ) {
-        Vectorcf temp = _kernel.row(i).array();
-        _kernel.row(i) = fft.fwd(temp);
-    }
-}
-
 Matrixcf CQ::forward( const Vectorf &x, int hop_length ) {
 
     // due to the reflection padding, the output size plus 1

@@ -26,13 +26,6 @@ class CQParams {
 
         CQParams( bool contour );
 
-//         CQParams(
-//             int sample_rate,
-//             int bins_per_octave,
-//             int n_bins,
-//             float freq_min,
-//             int hop
-//         );
 };
 
 class CQ {
@@ -66,9 +59,6 @@ class CQ {
 
         // lowpass filter for downsampling
         Vectorf _filter_kernel;
-
-        // compute the kernel matrix
-        void computeKernel();
 
         // compute the cqt for input audio
         Matrixcf forward( const Vectorf& x, int hop_length );

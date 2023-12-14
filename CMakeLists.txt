@@ -18,9 +18,9 @@ set( JSON_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/nlohmann-json )
 include_directories(${JSON_ROOT})
 
 # fftw
-set(FFTW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/fftw-3.3.10/build )
-link_libraries(${FFTW_ROOT}/lib/libfftw3f.so)
-include_directories(${FFTW_ROOT}/include)
+# set(FFTW_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/fftw-3.3.10/build )
+# link_libraries(${FFTW_ROOT}/lib/libfftw3f.so)
+# include_directories(${FFTW_ROOT}/include)
 
 # Eigen
 set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
@@ -32,43 +32,41 @@ find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
 find_package(ZLIB REQUIRED)
-include_directories(${ZLIB_INCLUDE_DIRS})
+link_libraries(${ZLIB_LIBRARIES})
 
-# Set sources for the library
-# set(SOURCES
-#     ./src/main.cpp
-#     ./src/CQT.cpp
-#     ./src/utils.cpp
-#     ./src/loader.cpp
-#     ./src/ext/cnpy/cnpy.cpp
-# )
-file(GLOB SOURCES
+file(GLOB EXE_SRCS
     ./src/*.cpp
     ./src/ext/cnpy/cnpy.cpp
 )
+# Exclude bind.cpp from sources
+list(FILTER EXE_SRCS EXCLUDE REGEX ".*bind.cpp$")
 
-# Set headers for the library
-# set(HEADERS
-#     ./src/typedef.h
-#     ./src/CQT.h
-#     ./src/utils.h
-#     ./src/loader.h
-#     ./src/ext/cnpy/cnpy.h
-#     ./src/ext/nlohmann-json/json.hpp
-# )
+file(GLOB PY_SRCS
+    ./src/*.cpp
+    ./src/ext/cnpy/cnpy.cpp
+)
+# Exclude main.cpp from sources
+list(FILTER PY_SRCS EXCLUDE REGEX ".*main.cpp$")
+
 file(GLOB HEADERS
     ./src/*.h
     ./src/ext/cnpy/cnpy.h
     ./src/ext/nlohmann-json/json.hpp
 )
 
-# Set so library output path
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+if ( BUILD_PY )
+    # Set so library output path
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-# Create the shared library
-pybind11_add_module(BasiCPP_Pitch MODULE ${SOURCES} ${HEADERS})
+    pybind11_add_module(BasiCPP_Pitch MODULE ${PY_SRCS} ${HEADERS})
 
-# Create so library
-target_compile_definitions(BasiCPP_Pitch PRIVATE VERSION_INFO=${PROJECT_VERSION})
+    # Create so library
+    target_compile_definitions(BasiCPP_Pitch PRIVATE VERSION_INFO=${PROJECT_VERSION})
+endif()
 
-
+if ( BUILD_EXE )
+    # Set executable output path
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+    # Create C++ executable
+    add_executable(run ${EXE_SRCS} ${HEADERS})
+endif()
