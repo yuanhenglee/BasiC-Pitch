@@ -8,8 +8,6 @@ void printMat(Matrixf &mat);
 
 void printMat(Matrixcf &mat);
 
-// void printPyarray(py::array_t<float> &pyarray);
-
 void printVecMatrixf(VecMatrixf &tensor);
 
 Vectorcf getHamming(int window_size);
@@ -25,10 +23,6 @@ Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride );
 Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n);
 
 Vectorf reflectionPadding(const Vectorf &x, int pad_length);
-
-// py::array_t<float> mat3D2pyarray(VecMatrixf &tensor);
-
-// VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray);
 
 int computeNFeaturesOut(int n_features_in, int kernel_size_feature, int stride);
 

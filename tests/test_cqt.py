@@ -25,7 +25,6 @@ def plot_hs( results, filename='hs.png' ):
 
 def get_audio(shorten=False):
     import librosa
-    # sig, _ = librosa.load(librosa.ex('brahms'), sr=22050)
     sig, _  = librosa.load("data/Undertale-Megalovania.wav", sr=22050, mono=True)
     # shortening the signal for quicker testing
     if shorten:

@@ -33,10 +33,6 @@ def test_model_output2note():
     from BasiCPP_Pitch.note import modelOutput2Notes
     audio = get_audio(shorten=False)
 
-    # bp_model = amtModel()
-    # notes = bp_model.transcribeAudio(audio)
-    # print(len(notes))
-
     import warnings
     warnings.simplefilter("ignore")
     with warnings.catch_warnings():

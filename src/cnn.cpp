@@ -13,7 +13,6 @@ CNN::~CNN() {
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
         delete _layers[i];
     }
-    // _layers.clear();
 }
 
 VecMatrixf CNN::forward( const VecMatrixf& input ) const {

@@ -25,7 +25,7 @@ def test_sigmoid():
     gold = 1 / (1 + np.exp(-np_in))
     print(gold)
 
-    # assert np.allclose(np_out, gold)
+    assert np.allclose(np_out, gold)
 
     np_in = np.arange(-12, 12).reshape(2, 3, 4)
     np_out = sigmoid.forward(np_in)
@@ -34,7 +34,7 @@ def test_sigmoid():
     gold = 1 / (1 + np.exp(-np_in))
     print(gold)
 
-    # assert np.allclose(np_out, gold)
+    assert np.allclose(np_out, gold)
 
 if __name__ == '__main__':
     # test_relu()

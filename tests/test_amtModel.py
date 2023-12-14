@@ -33,7 +33,6 @@ def plot_hm( datas ):
             v = datas[prefix + " " + suffix]
             v = (v - v.min()) / (v.max() - v.min())
             plt.imshow(v.T, cmap='coolwarm', vmin=0, vmax=1, aspect='auto', origin='lower')
-            # plt.pcolor(v.T, cmap='coolwarm', vmin=0, vmax=1)
     plt.tight_layout()
     plt.savefig("./tests/model_output.png")
 
@@ -55,7 +54,6 @@ def test_inference(vis = False):
     bp_model = BasiCPP_Pitch.amtModel()
     np_arr = get_audio()
     start_time = time.time()
-    # Yp, Yn, Yo = bp_model.inference(np_arr)
     notes = bp_model.transcribeAudio(np_arr)
     Yp, Yn, Yo = bp_model.getOutput()
     print(f"Elapsed time: {time.time() - start_time}")

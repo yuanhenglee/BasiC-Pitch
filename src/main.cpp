@@ -6,13 +6,6 @@
 
 int main(int argc, char** argv) {
 
-    bool benchmark = false;
-    for ( int i = 0 ; i < argc ; i++ ) {
-        if ( std::string(argv[i]) == "-b" || std::string(argv[i]) == "--benchmark" ) {
-            benchmark = true;
-        }
-    }
-
     auto audio = getExampleAudio();
 
     auto model = amtModel();

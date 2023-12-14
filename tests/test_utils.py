@@ -51,9 +51,6 @@ def test_windowed_audio():
     import warnings
     warnings.simplefilter("ignore")
     with warnings.catch_warnings():
-        # import tensorflow as tf
-        # np_in = np.concatenate([np.zeros(int(30*256/2)), np_in])
-        # gold = tf.signal.frame(np_in, 43844, 43844-30*256, pad_end=True, pad_value=0).numpy()
         from basic_pitch.inference import get_audio_input
         gold, _, _ = get_audio_input("data/Undertale-Megalovania.wav", 30*256, 43844-30*256)
         gold = gold.numpy().squeeze()

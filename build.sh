@@ -66,7 +66,7 @@ make
 cd ..
 
 if [ ${python} == "ON" ]; then
-    cp build/lib/*.so python/
+    cp lib/*.so python/
     cp lib/*.so tests/
     if [ ${test} == "ON" ]; then
         pytest

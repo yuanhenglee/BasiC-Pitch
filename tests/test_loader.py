@@ -43,7 +43,7 @@ def test_lowpass_filter(vis = False):
     print(gold.shape)
 
 
-    # assert np.allclose(lf, gold)
+    assert np.allclose(lf, gold)
 
     if vis:
         plt.figure(figsize=(12, 6))
