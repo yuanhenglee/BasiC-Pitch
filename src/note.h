@@ -15,6 +15,6 @@ struct Note {
     std::vector<int> bends; // units of 1/3 semitone
 };
 
-std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const Matrixf& Yo );
+std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const Matrixf& Yo, const bool melodia_trick = true );
 
 Matrixf getInferedOnsets( const Matrixf& Yo, const Matrixf& Yn );

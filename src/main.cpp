@@ -9,11 +9,19 @@
 void bind_note( py::module &m ) {
     auto m_note = m.def_submodule("note");
     m_note.def("getInferedOnsets", &getInferedOnsets);
+    m_note.def("modelOutput2Notes", &modelOutput2Notes);
     py::class_<Note>(m_note, "Note")
         .def_readwrite("start", &Note::start_time)
         .def_readwrite("end", &Note::end_time)
         .def_readwrite("pitch", &Note::pitch)
         .def_readwrite("amplitude", &Note::amplitude)
+        .def("__repr__",
+        [] (const Note &note) {
+            return std::to_string(note.start_time) + "\t"
+                + std::to_string(note.end_time) + "\t"
+                + std::to_string(note.pitch) + "\t"
+                + std::to_string(note.amplitude);
+        })
         ;
 }
 

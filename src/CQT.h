@@ -8,7 +8,7 @@ class CQParams {
         // init params  
         int sample_rate; // == sr in basic_pitch
         int bins_per_octave;
-        int n_bins; 
+        int n_bins;
         float freq_min; // == fmin in basic_pitch
         int sample_per_frame; // == hop_length in basic_pitch
 

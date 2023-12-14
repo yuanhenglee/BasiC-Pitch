@@ -33,7 +33,7 @@ std::vector<Note> amtModel::transcribeAudio( const Vectorf& audio ) {
     Matrixf Yo = concatMatrices(_Yo_buffer, _audio_len);
 
     // convert to midi note events
-    return modelOutput2Notes(Yp, Yn, Yo);
+    return modelOutput2Notes(Yp, Yn, Yo, true);
 }
 
 // input shape : (N_AUDIO_SAMPLES, N_BIN_CONTORU )

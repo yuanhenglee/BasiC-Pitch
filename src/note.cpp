@@ -1,12 +1,14 @@
 #include "note.h"
 #include "constant.h"
 #include <iostream>
+#include <vector>
+#include <tuple>
 
 inline float modelFrames2Time( int frame ) {
-    return static_cast<float>(frame * FFT_HOP) / SAMPLE_RATE - WINDOW_OFFSET * ( frame / ANNOT_N_FRAMES );
+    return (frame * FFT_HOP) / static_cast<double>(SAMPLE_RATE) - WINDOW_OFFSET * std::floor( frame / ANNOT_N_FRAMES );
 }
 
-std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const Matrixf& Yo ) {
+std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const Matrixf& Yo, const bool melodia_trick ) {
 
     int n_frames = Yn.rows(), n_pitches = Yn.cols();
 
@@ -14,11 +16,16 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
     
     Matrixf infered_Yo = getInferedOnsets( Yn, Yo );
     Matrixf remaining_energy(Yn);
+    std::vector<std::tuple<float*, int, int>> remaining_energy_idices;
+    if (melodia_trick) remaining_energy_idices.reserve(n_frames * n_pitches);
 
     // loop over onsets, go backwards in time
     // skip the last frame as line 399 in basic_pitch/note_creation.py
     for ( int start_idx = n_frames -2 ; start_idx >= 0 ; --start_idx ) {
         for ( int note_idx = n_pitches-1 ; note_idx >= 0 ; --note_idx ){
+
+            if (melodia_trick)
+                remaining_energy_idices.emplace_back( &remaining_energy(start_idx, note_idx), start_idx, note_idx );
 
             float onset = infered_Yo(start_idx, note_idx);
             // skip if onset is below threshold
@@ -43,7 +50,7 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
             i -= k; // go back to frame above threshold
 
             // if the note is too short, skip it
-            if ( i - start_idx < MIN_NOTE_LENGTH )
+            if ( i - start_idx <= MIN_NOTE_LENGTH )
                 continue;
 
             remaining_energy.block(start_idx, note_idx, i - start_idx, 1) *= 0;
@@ -64,6 +71,76 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
                 std::vector<int>()
             } );
         }
+    }
+
+    if (melodia_trick) {
+        std::sort( remaining_energy_idices.begin(), remaining_energy_idices.end(),
+            [] ( const std::tuple<float*, int, int> &a, const std::tuple<float*, int, int> &b ) {
+                return *std::get<0>(a) > *std::get<0>(b);
+            }
+        );
+        size_t max_energy_idx = 0;
+        float* max_energy_ptr = std::get<0>(remaining_energy_idices[max_energy_idx]);
+        while( (*max_energy_ptr) > FRAME_THRESHOLD ) {
+            *max_energy_ptr = 0;
+            int i_mid = std::get<1>(remaining_energy_idices[max_energy_idx]);
+            int freq_idx = std::get<2>(remaining_energy_idices[max_energy_idx]);
+
+            // forward pass
+            int i, k;
+            for ( i = i_mid + 1, k = 0 ; i < n_frames - 1 && k < ENERGY_THRESHOLD ; ++i ) {
+                if ( remaining_energy(i, freq_idx) < FRAME_THRESHOLD )
+                    k++;
+                else
+                    k = 0;
+                
+                remaining_energy(i, freq_idx) = 0;
+                if ( freq_idx < n_pitches - 1 )
+                    remaining_energy(i, freq_idx + 1) = 0;
+                if ( freq_idx > 0 )
+                    remaining_energy(i, freq_idx - 1) = 0;
+            }
+            int i_end = i - 1 - k; // go back to frame above threshold
+
+            // backward pass
+            for ( i = i_mid - 1, k = 0 ; i >= 0 && k < ENERGY_THRESHOLD ; --i ) {
+                if ( remaining_energy(i, freq_idx) < FRAME_THRESHOLD )
+                    k++;
+                else
+                    k = 0;
+                
+                remaining_energy(i, freq_idx) = 0;
+                if ( freq_idx < n_pitches - 1 )
+                    remaining_energy(i, freq_idx + 1) = 0;
+                if ( freq_idx > 0 )
+                    remaining_energy(i, freq_idx - 1) = 0;
+            }
+            int i_start = i + 1 + k; // go back to frame above threshold
+
+            if ( i_end - i_start <= MIN_NOTE_LENGTH )
+                continue; // skip if the note is too short
+
+            float amplitude = Yn.block(i_start, freq_idx, i_end - i_start, 1).mean();
+
+            notes.emplace_back( Note{
+                modelFrames2Time(i_start),
+                modelFrames2Time(i_end),
+                i_start,
+                i_end,
+                freq_idx + MIDI_OFFSET,
+                amplitude,
+                std::vector<int>()
+            } );
+
+            // update max_energy_idx to the next maximum that have not been set to 0
+            while( max_energy_idx < remaining_energy_idices.size() && *max_energy_ptr == 0 )
+                ++max_energy_idx;
+                max_energy_ptr = std::get<0>(remaining_energy_idices[max_energy_idx]);
+            if ( max_energy_idx >= remaining_energy_idices.size() )
+                break;
+        }
+        
+        
     }
 
     return notes;
