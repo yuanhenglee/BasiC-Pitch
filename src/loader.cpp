@@ -84,3 +84,12 @@ void loadCNNModel( std::vector<Layer*>& layers, std::string model_name ) {
 
     f.close();
 }
+
+Vectorf getExampleAudio() {
+    // load the example audio
+    cnpy::NpyArray arr = cnpy::npy_load("data/Undertale-Megalovania.npy");
+    const size_t& audio_length = arr.shape[0];
+    float* data = const_cast<float*>(arr.data<float>());
+    Vectorf example_audio = Eigen::Map<Vectorf>(data, audio_length);
+    return example_audio;
+}

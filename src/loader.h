@@ -10,3 +10,5 @@ void loadDefaultKernel(Matrixcf &kernel);
 void loadDefaultLowPassFilter( Vectorf &filter_kernel);
 
 void loadCNNModel(std::vector<Layer*> &layers, std::string model_name);
+
+Vectorf getExampleAudio();
