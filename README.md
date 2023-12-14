@@ -20,6 +20,23 @@ the model can be found in the research paper, [A Lightweight Instrument-Agnostic
 Model for Polyphonic Note Transcription and Multipitch
 Estimation](https://arxiv.org/abs/2203.09893).
 
+## How to build
+
+```bash
+./build.sh
+```
+The provided script will build the dynamic library `python/BasiCPP_Pitch.so` for Python API and the executable `bin/run` for C++ API.
+To building the .so or the executable separately, you can use flags '-p' and '-e' respectively.
+
+```bash
+./build.sh -h
+
+Usage: cmd [-p] [-e]
+  -p: build python module
+  -e: build executable
+  -t: run tests, only valid when python module is built
+```
+
 ## Problem to Solve
 
 In music information retrieval (MIR), Automatic Music Transcription (AMT) aims
