@@ -3,7 +3,7 @@ from BasiCPP_Pitch import amtModel
 import pretty_midi
 from typing import List
 
-def note2midi( notes: List[Note], midi_tempo: float = 120 ) -> pretty_midi.PrettyMIDI:
+def note2midi( notes: List[Note], midi_tempo: float = 115 ) -> pretty_midi.PrettyMIDI:
     """Convert notes to midi file
 
     Args:
