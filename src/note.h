@@ -18,3 +18,5 @@ struct Note {
 std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const Matrixf& Yo, const bool melodia_trick = true );
 
 Matrixf getInferedOnsets( const Matrixf& Yo, const Matrixf& Yn );
+
+void constrainFreq( Matrixf &Yo, Matrixf &Yn, const float min_freq, const float max_freq );
