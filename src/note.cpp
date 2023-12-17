@@ -20,9 +20,6 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
     std::vector<std::tuple<float*, int, int>> remaining_energy_idices;
     if (melodia_trick) remaining_energy_idices.reserve(n_frames * n_pitches);
 
-    // DEBUG
-    int peak_cnt = 0, valid_peak_cnt = 0, long_note_cnt = 0;
-
     // loop over onsets, go backwards in time
     // skip the last frame as line 399 in basic_pitch/note_creation.py
     // skip start_idx == 0 since they are not consider relmax in scipy.signal.argrelmax
@@ -39,12 +36,10 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
             float next_onset = infered_Yo(start_idx+1, note_idx);
             if ( onset < prev_onset || onset < next_onset )
                 continue;
-            ++peak_cnt;
 
             // skip if onset is below threshold
             if ( onset < ONSET_THRESHOLD )
                 continue;
-            ++valid_peak_cnt;
 
             // find time index at this frequency band where the frames drop below an energy threshold
             int i  = start_idx + 1, k = 0;
@@ -60,8 +55,6 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
             // if the note is too short, skip it
             if ( i - start_idx <= MIN_NOTE_LENGTH )
                 continue;
-            ++long_note_cnt;
-
 
             remaining_energy.block(start_idx, note_idx, i - start_idx, 1) *= 0;
             if ( note_idx < n_pitches - 1 )
@@ -82,11 +75,6 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
             } );
         }
     }
-
-    std::cout<<"peak_cnt: "<<peak_cnt<<std::endl;
-    std::cout<<"valid_peak_cnt: "<<valid_peak_cnt<<std::endl;
-    std::cout<<"long_note_cnt: "<<long_note_cnt<<std::endl;
-    std::cout<<"len(notes): "<<notes.size()<<std::endl;
 
     if (melodia_trick) {
         std::sort( remaining_energy_idices.begin(), remaining_energy_idices.end(),
