@@ -94,12 +94,21 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
                 return *std::get<0>(a) > *std::get<0>(b);
             }
         );
-        size_t max_energy_idx = 0;
-        float* max_energy_ptr = std::get<0>(remaining_energy_idices[max_energy_idx]);
-        while( (*max_energy_ptr) > FRAME_THRESHOLD ) {
-            *max_energy_ptr = 0;
-            int i_mid = std::get<1>(remaining_energy_idices[max_energy_idx]);
-            int freq_idx = std::get<2>(remaining_energy_idices[max_energy_idx]);
+        for ( auto& remaining_energy_tuple : remaining_energy_idices ) {
+
+            float* max_energy_ptr = std::get<0>(remaining_energy_tuple);
+            int i_mid = std::get<1>(remaining_energy_tuple);
+            int freq_idx = std::get<2>(remaining_energy_tuple);
+
+            // skip if the energy was set to 0 before
+            if ( *max_energy_ptr == 0 )
+                continue;
+
+            // break if the energy is below threshold
+            if ( *max_energy_ptr <= FRAME_THRESHOLD )
+                break;
+
+            remaining_energy(i_mid, freq_idx) = 0;
 
             // forward pass
             int i, k;
@@ -118,7 +127,7 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
             int i_end = i - 1 - k; // go back to frame above threshold
 
             // backward pass
-            for ( i = i_mid - 1, k = 0 ; i >= 0 && k < ENERGY_THRESHOLD ; --i ) {
+            for ( i = i_mid - 1, k = 0 ; i > 0 && k < ENERGY_THRESHOLD ; --i ) {
                 if ( remaining_energy(i, freq_idx) < FRAME_THRESHOLD )
                     k++;
                 else
@@ -146,13 +155,6 @@ std::vector<Note> modelOutput2Notes( const Matrixf& Yp, const Matrixf& Yn, const
                 amplitude,
                 std::vector<int>()
             } );
-
-            // update max_energy_idx to the next maximum that have not been set to 0
-            while( max_energy_idx < remaining_energy_idices.size() && *max_energy_ptr == 0 )
-                ++max_energy_idx;
-                max_energy_ptr = std::get<0>(remaining_energy_idices[max_energy_idx]);
-            if ( max_energy_idx >= remaining_energy_idices.size() )
-                break;
         }
                 
     }
