@@ -49,8 +49,8 @@ class CQ {
     private:
         
         // the kernel matrix
-        // Eigen::SparseMatrix<std::complex<float>> _kernel;
-        Matrixcf _kernel;
+        // Matrixcf _kernel;
+        CQTKernelMat _kernel;
         
         CQParams params;
 

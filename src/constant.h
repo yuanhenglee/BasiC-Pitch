@@ -3,6 +3,11 @@
 
 #include <cmath>
 
+// static size for the CQT kernel
+inline constexpr int CQT_KERNEL_HEIGHT = 36;
+
+inline constexpr int CQT_KERNEL_WIDTH = 256;
+
 inline constexpr int SAMPLE_RATE = 22050;
 
 inline constexpr int SEMITON_PER_OCTAVE = 12;

@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-void loadDefaultKernel(Matrixcf &kernel);
+void loadDefaultKernel(CQTKernelMat &kernel);
 
 void loadDefaultLowPassFilter( Vectorf &filter_kernel);
 
