@@ -37,7 +37,7 @@ inline const std::string getModelPath( std::string model_name ) {
         return "Unknown model";
 }
 
-void loadCNNModel( std::vector<Layer*>& layers, std::string model_name ) {
+void getLayers( std::vector<Layer*>& layers, std::string model_name ) {
     // load the model
     std::ifstream f(getModelPath(model_name));
     json w_json = json::parse(f);
@@ -79,6 +79,43 @@ void loadCNNModel( std::vector<Layer*>& layers, std::string model_name ) {
         }
         else {
             std::cout << "Unknown layer type: " << layer_type << std::endl;
+        }
+    }
+
+    f.close();
+}
+
+// support conv2d only for now
+void loadWeights( const std::vector<Layer*>& layers, std::string model_name ) {
+    // load the model
+    std::ifstream f(getModelPath(model_name));
+    json w_json = json::parse(f);
+
+    int json_idx = 0, layer_idx = 0;
+    // load the weights
+    auto json_layers = w_json["layers"];
+    while( json_idx < json_layers.size() ) {
+        auto layer_json = json_layers.at(json_idx);
+        std::string layer_type = layer_json["type"].get<std::string>();
+
+        if ( layer_type == "conv2d" ) {
+            // find the corresponding layer
+            while( layer_idx < layers.size() && layers[layer_idx]->type != LayerType::CONV2D  ) {
+                layer_idx++;
+            }
+            dynamic_cast<Conv2D*>(layers[layer_idx])->loadWeights(json_idx, layer_json);
+            if ( layer_json.contains("activation") ) {
+                std::string activation = layer_json["activation"].get<std::string>();
+                if ( activation == "relu" ) {
+                    json_idx++;
+                }
+                else if ( activation == "sigmoid" ) {
+                    json_idx++;
+                }
+                else {
+                    std::cout << "Unknown activation function: " << activation << std::endl;
+                }
+            }
         }
     }
 

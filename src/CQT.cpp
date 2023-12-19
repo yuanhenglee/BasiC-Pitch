@@ -1,6 +1,7 @@
 #include "CQT.h"
 #include "constant.h"
 #include "utils.h"
+#include "nnUtils.h"
 #include "loader.h"
 
 #include <iostream>

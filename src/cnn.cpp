@@ -5,7 +5,8 @@
 
 CNN::CNN( const std::string model_name ) : _model_name( model_name ) {
     // std::cout << "CNN " + model_name + " constructor called" << std::endl;
-    loadCNNModel( _layers, model_name );
+    // loadCNNModel( _layers, model_name );
+    getLayers( _layers, model_name );
     // std::cout << get_name() << std::endl;
 }
 

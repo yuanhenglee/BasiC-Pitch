@@ -1,6 +1,7 @@
 #include "typedef.h"
 #include "CQT.h"
 #include "utils.h"
+#include "nnUtils.h"
 #include "layer.h"
 #include "cnn.h"
 #include "amtModel.h"
@@ -16,6 +17,7 @@
 
 namespace py = pybind11;
 
+// binding utils functions
 void printPyarray(py::array_t<float> &pyarray) {
     if ( pyarray.ndim() == 1 ) {
         auto r = pyarray.unchecked<1>();
@@ -77,6 +79,15 @@ VecMatrixf pyarray2mat3D(py::array_t<float> &pyarray) {
     return tensor;
 }
 
+void bind_nnUtils( py::module &m ) {
+    auto m_nnUtils = m.def_submodule("nnUtils");
+    m_nnUtils.def("im2col", &im2col);
+    m_nnUtils.def("col2im", &col2im);
+    m_nnUtils.def("testConv2d", [] ( Matrixf &x, Matrixf &filter_kernel, int stride ) {
+        Matrixf output = conv2d(x, filter_kernel, stride);
+        return output;
+    });
+}
 
 void bind_note( py::module &m ) {
     auto m_note = m.def_submodule("note");
@@ -159,10 +170,6 @@ void bind_amtModel( py::module &m ) {
 // bind the utils functions
 void bind_utils( py::module &m ) {
     auto m_utils = m.def_submodule("utils");
-    m_utils.def("testConv2d", [] ( Matrixf &x, Matrixf &filter_kernel, int stride ) {
-        Matrixf output = conv2d(x, filter_kernel, stride);
-        return output;
-    });
     m_utils.def("testMatConversion", [] ( py::array_t<float> input ) {
         printPyarray(input);
         VecMatrixf input_tensor = pyarray2mat3D(input);
@@ -220,4 +227,5 @@ PYBIND11_MODULE(BasiCPP_Pitch, m) {
     bind_cnn(m);
     bind_note(m);
     bind_utils(m);
+    bind_nnUtils(m);
 }

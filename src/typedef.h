@@ -11,5 +11,5 @@ typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     Matrixf;
 typedef Eigen::Matrix<std::complex<float>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
     Matrixcf;
-typedef std::vector<Matrixf> VecMatrixf;
-typedef std::vector<VecMatrixf> VecVecMatrixf;
+typedef std::vector<Matrixf, Eigen::aligned_allocator<Matrixf>> VecMatrixf;
+typedef std::vector<VecMatrixf, Eigen::aligned_allocator<VecMatrixf>> VecVecMatrixf;

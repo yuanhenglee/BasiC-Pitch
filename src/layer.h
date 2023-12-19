@@ -7,10 +7,18 @@
 
 using json = nlohmann::json;
 
+enum LayerType {
+    NONE,
+    CONV2D,
+    RELU,
+    SIGMOID,
+    BATCHNORM
+};
+
 class Layer {
     public:
 
-        Layer() = default;
+        Layer(LayerType type) : type(type) {}
 
         ~Layer() = default;
 
@@ -18,6 +26,7 @@ class Layer {
 
         virtual VecMatrixf forward( const VecMatrixf& input ) const = 0;
 
+        LayerType type;
 };
 
 class Conv2D : public Layer {
@@ -33,7 +42,13 @@ class Conv2D : public Layer {
 
         VecVecMatrixf getWeights() const;
 
+
     private:
+
+        // different forward implementation
+        VecMatrixf forward_naive( const VecMatrixf& input ) const;
+
+        VecMatrixf forward_im2col( const VecMatrixf& input ) const;
 
         int _n_filters_in;
         int _n_filters_out;
@@ -44,12 +59,16 @@ class Conv2D : public Layer {
         int _stride;
 
         VecVecMatrixf _weights;
+        // im2col version of weights, shape: ( n_filters_out, n_filters_in * kernel_size_time * kernel_size_feature)
+        Matrixf _weights_2cols;
         std::vector<float> _bias;
 
 };
 
 class ReLU : public Layer {
     public:
+
+        ReLU();
 
         std::string get_name() const override;
 
@@ -59,6 +78,8 @@ class ReLU : public Layer {
 
 class Sigmoid : public Layer {
     public:
+
+        Sigmoid();
 
         std::string get_name() const override;
 

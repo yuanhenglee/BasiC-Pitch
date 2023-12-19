@@ -20,7 +20,8 @@ class CNN {
 
         std::vector<Layer*> get_layers() const;    
 
-    private:
+    // private:
+    protected:
 
         std::vector<Layer*> _layers;
     
