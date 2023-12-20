@@ -18,8 +18,8 @@ std::string Conv2D::get_name() const{
 
 VecMatrixf Conv2D::forward( const VecMatrixf& input ) const {
 
-    // return forward_naive(input);
-    return forward_im2col(input);
+    return forward_naive(input);
+    // return forward_im2col(input);
 }
 
 // naive implementation of 2D convolution
@@ -45,10 +45,11 @@ VecMatrixf Conv2D::forward_naive( const VecMatrixf& input ) const{
 // im2col + gemm implementation of 2D convolution
 VecMatrixf Conv2D::forward_im2col( const VecMatrixf& input ) const {
     int n_frames_out = input[0].rows();
-    Matrixf input2cols = im2col(input, n_frames_out, _n_features_out, _kernel_size_time, _kernel_size_feature, _stride);
+    // Matrixf input2cols = im2col(input, n_frames_out, _n_features_out, _kernel_size_time, _kernel_size_feature, _stride);
 
     // gemm
-    Matrixf output2cols = _weights_2cols * input2cols;
+    Matrixf output2cols = Matrixf::Zero( _n_filters_out, n_frames_out * _n_features_out );
+    // Matrixf output2cols = _weights_2cols * input2cols;
 
     // add bias
     for ( int i = 0 ; i < _n_filters_out ; i++ ) {
