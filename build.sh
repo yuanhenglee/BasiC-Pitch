@@ -61,7 +61,7 @@ fi
 
 mkdir build
 cd build
-cmake .. -D BUILD_PY=${python} -D BUILD_EXE=${exe} -D GPROF=${gprofile}
+cmake .. -DBUILD_PY=${python} -DBUILD_EXE=${exe} -DGPROF=${gprofile}
 make
 cd ..
 
