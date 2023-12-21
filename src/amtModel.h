@@ -21,7 +21,6 @@ class amtModel {
         // inference API for Eigen IO
         void inferenceFrame( const Vectorf& x );
 
-
         // get the CQ object, just for testing
         CQ getCQ() { return _cqt; }
 
@@ -50,6 +49,10 @@ class amtModel {
         VecMatrixf _Yp_buffer;
         VecMatrixf _Yn_buffer;
         VecMatrixf _Yo_buffer;
+
+        Matrixf _Yp;
+        Matrixf _Yn;
+        Matrixf _Yo;
 
         int _audio_len;
 };

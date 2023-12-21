@@ -38,7 +38,8 @@ class CQ {
         Matrixf computeCQT(const Vectorf& x, bool batch_norm);
 
         // Return the cqt feature with harmonic stacking, for vector of matrix IO
-        VecMatrixf cqtHarmonic(const Vectorf& x, bool batch_norm);
+        // VecMatrixf cqtHarmonic(const Vectorf& x, bool batch_norm);
+        Matrixf cqtHarmonic(const Vectorf& x, bool batch_norm);
 
         // get the kernel matrix, just for testing
         Matrixcf getKernel();
@@ -64,5 +65,7 @@ class CQ {
         Matrixcf forward( const Vectorf& x, int hop_length );
 
         // harmonic stacking
-        VecMatrixf harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
+        // VecMatrixf harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
+        Matrixf harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs);
+
 };  

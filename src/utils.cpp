@@ -96,13 +96,16 @@ std::vector<Vectorf> getWindowedAudio( const Vectorf &x ) {
     return result;
 }
 
-Matrixf concatMatrices(const VecMatrixf &matrices, int audio_length ) {
+// size of matrices = n_windows
+// shape of each matrix = (n_frames_in, n_features_in)
+Matrixf concatMatrices(const VecMatrixf &matrices, const int audio_length, const int n_frames_in ) {
     int n_frames_original = std::floor(audio_length * (ANNOTATIONS_FPS * 1.0f /SAMPLE_RATE) );
-    int mat_height = matrices[0].rows() - N_OVERLAP_FRAMES;
-    int mat_width = matrices[0].cols();
+    int mat_height = n_frames_in - N_OVERLAP_FRAMES;
+    int mat_width = matrices[0].cols() / n_frames_in;
     Matrixf result = Matrixf::Zero( matrices.size() * mat_height, mat_width );
     int start = 0;
-    for ( const Matrixf& m : matrices ) {
+    for ( const Matrixf& flat_m : matrices ) {
+        Matrixf m = Eigen::Map<const Matrixf>(flat_m.data(), n_frames_in, mat_width);
         // remove half of the overlap frames from the beginning and the end
         result.block(start, 0, 
             mat_height, mat_width

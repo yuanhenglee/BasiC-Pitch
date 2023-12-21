@@ -7,7 +7,7 @@ def test_relu():
 
     relu = layer.ReLU()
 
-    np_out = relu.forward(np_in)
+    np_out = relu.forward(np_in.reshape(np_in.shape[0], -1)).reshape(np_in.shape)
 
     gold = np_in.copy()
     gold[gold < 0] = 0
@@ -19,7 +19,7 @@ def test_sigmoid():
     sigmoid = layer.Sigmoid()
 
     np_in = np.arange(0, 24).reshape(2, 3, 4)
-    np_out = sigmoid.forward(np_in)
+    np_out = sigmoid.forward(np_in.reshape(np_in.shape[0], -1)).reshape(np_in.shape)
     print(np_out)
 
     gold = 1 / (1 + np.exp(-np_in))
@@ -28,7 +28,7 @@ def test_sigmoid():
     assert np.allclose(np_out, gold)
 
     np_in = np.arange(-12, 12).reshape(2, 3, 4)
-    np_out = sigmoid.forward(np_in)
+    np_out = sigmoid.forward(np_in.reshape(np_in.shape[0], -1)).reshape(np_in.shape)
     print(np_out)
 
     gold = 1 / (1 + np.exp(-np_in))

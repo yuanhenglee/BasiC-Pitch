@@ -20,4 +20,4 @@ Matrixf downsamplingByN(Vectorf &x, Vectorf &filter_kernel, float n);
 
 std::vector<Vectorf> getWindowedAudio(const Vectorf &x);
 
-Matrixf concatMatrices(const VecMatrixf &matrices, int audio_length);
+Matrixf concatMatrices(const VecMatrixf &matrices, const int audio_length, const int n_frames_in);

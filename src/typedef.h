@@ -4,6 +4,8 @@
 #include "Eigen/Sparse"
 #include <vector>
 
+typedef Eigen::Array<float, Eigen::Dynamic, 1> ColArrayf;
+typedef Eigen::Matrix<float, Eigen::Dynamic, 1> ColVectorf;
 typedef Eigen::Matrix<float, 1, Eigen::Dynamic, Eigen::RowMajor> Vectorf;
 typedef Eigen::Matrix<std::complex<float>, 1, Eigen::Dynamic, Eigen::RowMajor>
     Vectorcf;

@@ -14,7 +14,8 @@ class CNN {
         ~CNN();
     
         // inference API for Eigen IO
-        VecMatrixf forward( const VecMatrixf& input ) const;
+        // VecMatrixf forward( const VecMatrixf& input ) const;
+        Matrixf forward( const Matrixf& input ) const;
 
         std::string get_name() const;
 

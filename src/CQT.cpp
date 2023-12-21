@@ -70,12 +70,12 @@ Matrixcf CQ::forward( const Vectorf &x, int hop_length ) {
     return cqt_feat.transpose();
 }
 
-// output shape = (n_harmonics, n_frames, n_bins)
-VecMatrixf CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
+// output shape = (n_harmonics, n_frames*n_bins)
+Matrixf CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std::vector<float> harmonics, int n_output_freqs) {
     
     int n_bins = cqt.rows(), n_frames = cqt.cols();
 
-    VecMatrixf result(harmonics.size());
+    Matrixf result(harmonics.size(), n_frames * n_output_freqs);
     for ( size_t i = 0 ; i < harmonics.size() ; i++ ) {
         
         Matrixf padded = Matrixf::Zero(n_bins, n_frames);
@@ -90,9 +90,9 @@ VecMatrixf CQ::harmonicStacking(const Matrixf& cqt , int bins_per_semitone, std:
             padded.block(-shift, 0, n_bins + shift, n_frames) = cqt.block(0, 0, n_bins + shift, n_frames);
         }
 
-        Matrixf temp = padded.block(0, 0, n_output_freqs, n_frames);
-
-        result[i] = temp.transpose();
+        Matrixf temp = padded.block(0, 0, n_output_freqs, n_frames).transpose();
+        std::cout << temp.rows() << " " << temp.cols() << std::endl;
+        result.row(i) = Eigen::Map<Vectorf>(temp.data(), temp.size());
     }
 
     return result;
@@ -148,7 +148,7 @@ Matrixf CQ::computeCQT(const Vectorf& audio, bool batch_norm) {
 }
 
 // Matrixf CQ::cqtEigenHarmonic(const Vectorf& audio) {
-VecMatrixf CQ::cqtHarmonic(const Vectorf& audio, bool batch_norm) {
+Matrixf CQ::cqtHarmonic(const Vectorf& audio, bool batch_norm) {
 
     // Matrixf cqt_feat = cqtEigen(audio);
     Matrixf cqt_feat = computeCQT(audio, batch_norm);
@@ -158,7 +158,7 @@ VecMatrixf CQ::cqtHarmonic(const Vectorf& audio, bool batch_norm) {
         harmonics.emplace_back(i);
     }
 
-    VecMatrixf hs = harmonicStacking(
+    Matrixf hs = harmonicStacking(
         cqt_feat,
         CONTOURS_BINS_PER_SEMITONE,
         harmonics,

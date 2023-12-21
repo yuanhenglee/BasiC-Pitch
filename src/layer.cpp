@@ -16,10 +16,23 @@ std::string Conv2D::get_name() const{
         ")";
 }
 
-VecMatrixf Conv2D::forward( const VecMatrixf& input ) const {
+// VecMatrixf Conv2D::forward( const VecMatrixf& input ) const {
 
-    return forward_naive(input);
-    // return forward_im2col(input);
+//     return forward_naive(input);
+//     // return forward_im2col(input);
+// }
+
+Matrixf Conv2D::forward( const Matrixf& input ) const {
+    int n_frames_in = input.rows();
+    Matrixf input2cols = im2col(input, n_frames_in, _n_features_in, n_frames_in, _n_features_out, _kernel_size_time, _kernel_size_feature, _stride);
+
+    // gemm
+    Matrixf output2cols = _weights_2cols * input2cols;
+
+    // add bias
+    output2cols.colwise() += _bias_vec;
+
+    return output2cols;
 }
 
 // naive implementation of 2D convolution
@@ -92,7 +105,7 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
                 auto l3 = l2.at(k);
                 for ( size_t l = 0 ; l < _n_filters_out ; l++ ) {
                     float w = l3.at(l).get<float>();
-                    _weights[k][l](i, j) = w;
+                    // _weights[k][l](i, j) = w;
                     _weights_2cols(l, k * _kernel_size_time * _kernel_size_feature + i * _kernel_size_feature + j) = w;
                 }
             }
@@ -102,6 +115,7 @@ void Conv2D::loadWeights( int& json_idx, const json& w_json ){
     // bias should be of shape ( n_filters_out )
     auto layer_bias = weights.at(1);
     _bias = layer_bias.get<std::vector<float>>();
+    _bias_vec = Eigen::Map<ColVectorf>(_bias.data(), _bias.size());
 
     if ( _bias.size() != _n_filters_out ) {
         std::cout << "Error: bias size mismatch" << std::endl;
@@ -128,15 +142,19 @@ std::string ReLU::get_name() const{
     return "ReLU";
 }
 
-VecMatrixf ReLU::forward( const VecMatrixf& input ) const{
-    VecMatrixf output(input);
-    std::vector<int> shape = {input.size(), input[0].rows(), input[0].cols()};
-    for ( int i = 0 ; i < shape[0] ; i++ )
-        for ( int j = 0 ; j < shape[1] ; j++ )
-            for ( int k = 0 ; k < shape[2] ; k++ )
-                if ( output[i](j, k) < 0 )
-                    output[i](j, k) = 0;
-    return output;
+// VecMatrixf ReLU::forward( const VecMatrixf& input ) const {
+//     VecMatrixf output(input);
+//     std::vector<int> shape = {input.size(), input[0].rows(), input[0].cols()};
+//     for ( int i = 0 ; i < shape[0] ; i++ )
+//         for ( int j = 0 ; j < shape[1] ; j++ )
+//             for ( int k = 0 ; k < shape[2] ; k++ )
+//                 if ( output[i](j, k) < 0 )
+//                     output[i](j, k) = 0;
+//     return output;
+// }
+
+Matrixf ReLU::forward( const Matrixf& input ) const {
+    return input.cwiseMax(0);
 }
 
 Sigmoid::Sigmoid() : Layer(LayerType::SIGMOID) {}
@@ -145,20 +163,24 @@ std::string Sigmoid::get_name() const{
     return "Sigmoid";
 }
 
-VecMatrixf Sigmoid::forward( const VecMatrixf& input ) const{
-    VecMatrixf output(input);
-    std::vector<int> shape = {input.size(), input[0].rows(), input[0].cols()};
-    for ( int i = 0 ; i < shape[0] ; i++ )
-        for ( int j = 0 ; j < shape[1] ; j++ )
-            for ( int k = 0 ; k < shape[2] ; k++ ) {
-                if ( input[i](j, k) > 0 )
-                    output[i](j, k) = 1.0f / (1.0f + std::exp(-input[i](j, k)));
-                else {
-                    float exp_x = std::exp(input[i](j, k));
-                    output[i](j, k) = exp_x / (1.0f + exp_x);
-                }
-            }
-    return output;
+// VecMatrixf Sigmoid::forward( const VecMatrixf& input ) const {
+//     VecMatrixf output(input);
+//     std::vector<int> shape = {input.size(), input[0].rows(), input[0].cols()};
+//     for ( int i = 0 ; i < shape[0] ; i++ )
+//         for ( int j = 0 ; j < shape[1] ; j++ )
+//             for ( int k = 0 ; k < shape[2] ; k++ ) {
+//                 if ( input[i](j, k) > 0 )
+//                     output[i](j, k) = 1.0f / (1.0f + std::exp(-input[i](j, k)));
+//                 else {
+//                     float exp_x = std::exp(input[i](j, k));
+//                     output[i](j, k) = exp_x / (1.0f + exp_x);
+//                 }
+//             }
+//     return output;
+// }
+
+Matrixf Sigmoid::forward( const Matrixf& input ) const {
+    return input.unaryExpr(&sigmoid);
 }
 
 BatchNorm::BatchNorm( int& json_idx, const json& weights ) : Layer(LayerType::BATCHNORM) {
@@ -169,12 +191,19 @@ std::string BatchNorm::get_name() const{
     return "BatchNorm";
 }
 
-VecMatrixf BatchNorm::forward( const VecMatrixf& input ) const{
-    VecMatrixf output(input);
-    for ( int i = 0 ; i < input.size() ; i++ ) {
-        output[i] = (input[i].array() - _mean[i]) * _multiplier[i] + _beta[i];
-    }
-    return output;
+// VecMatrixf BatchNorm::forward( const VecMatrixf& input ) const{
+//     VecMatrixf output(input);
+//     for ( int i = 0 ; i < input.size() ; i++ ) {
+//         output[i] = (input[i].array() - _mean[i]) * _multiplier[i] + _beta[i];
+//     }
+//     return output;
+// }
+
+Matrixf BatchNorm::forward( const Matrixf& input ) const{
+    Eigen::Array<float, Eigen::Dynamic, Eigen::Dynamic> output = input.array().colwise() - _mean_vec;
+    output = output.colwise() * _multiplier_vec;
+    output = output.colwise() + _beta_vec;
+    return Matrixf(output);
 }
 
 void BatchNorm::loadWeights( int& json_idx, const json& w_json ){
@@ -190,6 +219,12 @@ void BatchNorm::loadWeights( int& json_idx, const json& w_json ){
     for ( int i = 0 ; i < _gamma.size() ; i++ ) {
         _multiplier[i] = _gamma[i] / std::sqrt(_variance[i] + 0.001f);
     }
+
+    _mean_vec = Eigen::Map<ColArrayf>(_mean.data(), _mean.size());
+    _variance_vec = Eigen::Map<ColArrayf>(_variance.data(), _variance.size());
+    _gamma_vec = Eigen::Map<ColArrayf>(_gamma.data(), _gamma.size());
+    _beta_vec = Eigen::Map<ColArrayf>(_beta.data(), _beta.size());
+    _multiplier_vec = Eigen::Map<ColVectorf>(_multiplier.data(), _multiplier.size());
 
     json_idx++;
 }

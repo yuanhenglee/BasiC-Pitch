@@ -57,6 +57,15 @@ Vectorf reflectionPadding(const Vectorf &x, int pad_length) {
     return padded_x;
 }
 
+float sigmoid( float x ) {
+    if ( x > 0 )
+        return 1.0f / (1.0f + std::exp(-x));
+    else {
+        float exp_x = std::exp(x);
+        return exp_x / (1.0f + exp_x);
+    }
+}
+
 inline bool valid_idx( int idx, int max_idx ) {
     return idx >= 0 && idx < max_idx;
 }

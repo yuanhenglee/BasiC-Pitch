@@ -1,5 +1,6 @@
 #include "cnn.h"
 #include "constant.h"
+#include "nnUtils.h"
 #include "loader.h"
 #include <iostream>
 
@@ -16,13 +17,22 @@ CNN::~CNN() {
     }
 }
 
-VecMatrixf CNN::forward( const VecMatrixf& input ) const {
+// VecMatrixf CNN::forward( const VecMatrixf& input ) const {
+//     // std::cout << _model_name + " forward pass" << std::endl;
+//     VecMatrixf output = input;
+    // for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
+    //     output = _layers[i]->forward( output );
+    // }
+    // std::cout << "output size = " << output.size() << std::endl;
+//     return output;
+// }
+
+Matrixf CNN::forward( const Matrixf& input ) const {
     // std::cout << _model_name + " forward pass" << std::endl;
-    VecMatrixf output = input;
+    Matrixf output = input;
     for ( size_t i = 0 ; i < _layers.size() ; i++ ) {
         output = _layers[i]->forward( output );
     }
-    // std::cout << "output size = " << output.size() << std::endl;
     return output;
 }
 

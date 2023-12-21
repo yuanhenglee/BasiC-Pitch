@@ -116,25 +116,28 @@ void bind_layer( py::module &m ) {
             VecVecMatrixf weights = conv2d.getWeights();
             return weights[0][0];
         })
-        .def("forward", [] ( const Conv2D &conv2d, py::array_t<float> input ) {
-            VecMatrixf input_tensor = pyarray2mat3D(input);
-            VecMatrixf output_tensor = conv2d.forward(input_tensor);
-            return mat3D2pyarray(output_tensor);
-        });
+        // .def("forward", [] ( const Conv2D &conv2d, py::array_t<float> input ) {
+        //     VecMatrixf input_tensor = pyarray2mat3D(input);
+        //     VecMatrixf output_tensor = conv2d.forward(input_tensor);
+        //     return mat3D2pyarray(output_tensor);
+        // });
+        .def("forward", &Conv2D::forward);
     py::class_<ReLU, Layer>(m_layer, "ReLU")
         .def(py::init<>())
-        .def("forward", [] ( const ReLU &relu, py::array_t<float> input ) {
-            VecMatrixf input_tensor = pyarray2mat3D(input);
-            VecMatrixf output_tensor = relu.forward(input_tensor);
-            return mat3D2pyarray(output_tensor);
-        });
+        // .def("forward", [] ( const ReLU &relu, py::array_t<float> input ) {
+        //     VecMatrixf input_tensor = pyarray2mat3D(input);
+        //     VecMatrixf output_tensor = relu.forward(input_tensor);
+        //     return mat3D2pyarray(output_tensor);
+        // });
+        .def("forward", &ReLU::forward);
     py::class_<Sigmoid, Layer>(m_layer, "Sigmoid")
         .def(py::init<>())
-        .def("forward", [] ( const Sigmoid &sigmoid, py::array_t<float> input ) {
-            VecMatrixf input_tensor = pyarray2mat3D(input);
-            VecMatrixf output_tensor = sigmoid.forward(input_tensor);
-            return mat3D2pyarray(output_tensor);
-        });
+        // .def("forward", [] ( const Sigmoid &sigmoid, py::array_t<float> input ) {
+        //     VecMatrixf input_tensor = pyarray2mat3D(input);
+        //     VecMatrixf output_tensor = sigmoid.forward(input_tensor);
+        //     return mat3D2pyarray(output_tensor);
+        // });
+        .def("forward", &Sigmoid::forward);
 }
 
 void bind_cnn( py::module &m ) {
@@ -144,11 +147,12 @@ void bind_cnn( py::module &m ) {
         [] (const CNN &cnn) {
             return cnn.get_name();
         })
-        .def("forward", [] ( const CNN &cnn, py::array_t<float> input ) {
-            VecMatrixf input_tensor = pyarray2mat3D(input);
-            VecMatrixf output_tensor = cnn.forward(input_tensor);
-            return mat3D2pyarray(output_tensor);
-        })
+        .def( "forward", &CNN::forward )
+        // .def("forward", [] ( const CNN &cnn, py::array_t<float> input ) {
+        //     VecMatrixf input_tensor = pyarray2mat3D(input);
+        //     VecMatrixf output_tensor = cnn.forward(input_tensor);
+        //     return mat3D2pyarray(output_tensor);
+        // })
         .def("getFirstKernel", [] ( const CNN &cnn ) {
             std::vector<Layer*> layers(cnn.get_layers());
             Matrixf weights = dynamic_cast<Conv2D*>(layers[0])->getWeights()[0][0];
@@ -212,10 +216,11 @@ void bind_CQ( py::module &m ) {
         .def("computeCQT", &CQ::computeCQT, py::arg("x"), py::arg("batch_norm") = false)
         .def("getKernel", &CQ::getKernel)
         .def("getFilter", &CQ::getFilter)
-        .def("harmonicStacking", [] ( CQ &cq, Vectorf &x, bool batch_norm ) {
-            VecMatrixf output_tensor = cq.cqtHarmonic(x, batch_norm);
-            return mat3D2pyarray(output_tensor);
-        }, py::arg("x"), py::arg("batch_norm") = false);
+        // .def("harmonicStacking", [] ( CQ &cq, Vectorf &x, bool batch_norm ) {
+        //     VecMatrixf output_tensor = cq.cqtHarmonic(x, batch_norm);
+        //     return mat3D2pyarray(output_tensor);
+        // }, py::arg("x"), py::arg("batch_norm") = false);
+        .def("harmonicStacking", &CQ::cqtHarmonic, py::arg("x"), py::arg("batch_norm") = false);
 }
 
 PYBIND11_MODULE(BasiCPP_Pitch, m) {
