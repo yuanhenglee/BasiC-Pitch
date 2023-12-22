@@ -10,7 +10,7 @@ out_H = (H - K_H) // stride + 1
 out_W = (W - K_W) // stride + 1
 
 def get_input_img():
-    return [ np.arange(H*W).reshape(H,W) for _ in range(C) ]
+    return np.arange(C*H*W).reshape(C,H*W)
 
 def get_output_col():
     return np.arange(C * out_H * out_W ).reshape(C, out_H*out_W)
@@ -18,7 +18,7 @@ def get_output_col():
 def test_im2col():
     from BasiCPP_Pitch.nnUtils import im2col
     x = get_input_img()
-    y = im2col(x, out_H, out_W, K_H, K_W, stride)
+    y = im2col(x, H, W, out_H, out_W, K_H, K_W, stride)
     print(x)
     print(y)
 
@@ -54,5 +54,5 @@ def test_conv2d():
 
 
 if __name__ == "__main__":
-    # test_im2col()
-    test_col2im()
+    test_im2col()
+    # test_col2im()
