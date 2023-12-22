@@ -62,15 +62,19 @@ def test_inference(vis = False):
     plot_dict['Ours note'] = np.array(Yn)
     plot_dict['Ours onset'] = np.array(Yo)
 
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        start_time = time.time()
-        from basic_pitch.inference import run_inference
-        from basic_pitch import ICASSP_2022_MODEL_PATH
-        from tensorflow import saved_model
-        model = saved_model.load(str(ICASSP_2022_MODEL_PATH))
-        gold = run_inference("data/Undertale-Megalovania.wav", model)
+    start_time = time.time()
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+    # force 1 thread
+    os.environ['TF_NUM_INTEROP_THREADS'] = '1'
+    os.environ['TF_NUM_INTRAOP_THREADS'] = '1'
+    from basic_pitch.inference import run_inference
+    from basic_pitch import ICASSP_2022_MODEL_PATH
+    from tensorflow import saved_model
+    model = saved_model.load(str(ICASSP_2022_MODEL_PATH))
+    gold = run_inference("data/Undertale-Megalovania.wav", model)
     print(f"Elapsed time: {time.time() - start_time}")
     for k, v in gold.items():
         plot_dict["Baseline " + k] = v

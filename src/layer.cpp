@@ -18,8 +18,8 @@ std::string Conv2D::get_name() const{
 
 VecMatrixf Conv2D::forward( const VecMatrixf& input ) const {
 
-    // return forward_naive(input);
-    return forward_im2col(input);
+    return forward_naive(input);
+    // return forward_im2col(input);
 }
 
 // naive implementation of 2D convolution

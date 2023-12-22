@@ -1,7 +1,15 @@
 #include "amtModel.h"
 #include "loader.h"
+#include <iostream>
+
+void printRunStats() {
+    // Eigen number of threads
+    std::cout << "Eigen number of threads: " << Eigen::nbThreads() << std::endl;
+}
 
 int main(int argc, char** argv) {
+
+    // printRunStats();
 
     // Load the example audio
     auto audio = getExampleAudio();

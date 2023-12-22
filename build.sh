@@ -44,24 +44,9 @@ if [ ! -d "src/ext/eigen-3.3.7" ]; then
     cd ${cur_wd}
 fi
 
-if [ ! -d "src/ext/fftw-3.3.10" ]; then
-    if [ ! -f "src/ext/fftw-3.3.10.tar.gz" ]; then
-        wget http://www.fftw.org/fftw-3.3.10.tar.gz -P src/ext
-    fi
-    cur_wd=$(pwd)
-    cd src/ext
-    tar -zxf fftw-3.3.10.tar.gz
-    rm fftw-3.3.10.tar.gz
-    cd fftw-3.3.10
-    ./configure --enable-shared --enable-float  -prefix=${PWD}/build 
-    make CFLAGS="-fPIC"
-    make install
-    cd ${cur_wd}
-fi
-
 mkdir build
 cd build
-cmake .. -D BUILD_PY=${python} -D BUILD_EXE=${exe} -D GPROF=${gprofile}
+cmake .. -DBUILD_PY=${python} -DBUILD_EXE=${exe} -DGPROF=${gprofile}
 make
 cd ..
 
