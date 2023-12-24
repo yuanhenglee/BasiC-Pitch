@@ -10,9 +10,7 @@ Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride );
 
 Vectorf reflectionPadding(const Vectorf &x, int pad_length);
 
-// shape of input: (C, HW)
-Matrixf im2col( const Matrixf& input,
-    const int n_frames_in, const int n_features_in, const int n_frames_out, const int n_features_out,
-    const int kernel_height, const int kernel_width, const int stride);
+// shape of input: (H, W)
+Matrixf im2col( const VecMatrixf& input, int n_frames_out, int n_features_out, int kernel_height, int kernel_width, int stride);
 
 VecMatrixf col2im( const Matrixf& input, int n_frames_out, int n_features_out );

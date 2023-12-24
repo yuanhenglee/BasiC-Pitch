@@ -57,54 +57,25 @@ Vectorf reflectionPadding(const Vectorf &x, int pad_length) {
     return padded_x;
 }
 
-inline bool valid_idx( int idx, int max_idx ) {
-    return idx >= 0 && idx < max_idx;
-}
-
-// shape of input: (C, HW)
-Matrixf im2col( const Matrixf& input,
-    const int n_frames_in, const int n_features_in, const int n_frames_out, const int n_features_out,
-    const int kernel_height, const int kernel_width, const int stride) {
-
-    int n_filters_in = input.rows();
+// shape of input: (H, W)
+Matrixf im2col( const VecMatrixf& input, int n_frames_out, int n_features_out, int kernel_height, int kernel_width, int stride) {
+    int n_filters_in = input.size();
+    int n_frames_in = input[0].rows();
+    int n_features_in = input[0].cols();
     int pad_height = padLength(n_frames_in, kernel_height, 1, n_frames_out);
     int pad_width = padLength(n_features_in, kernel_width, stride, n_features_out);
-
-    Matrixf output(n_filters_in * kernel_height * kernel_width, n_frames_out * n_features_out);
-    // iterate by the order of output
-    for ( int c = 0 ; c < n_filters_in ; c++ ) {
-        for ( int kernel_row_idx = 0 ; kernel_row_idx < kernel_height ; kernel_row_idx++ ) {
-            for ( int kernel_col_idx = 0 ; kernel_col_idx < kernel_width ; kernel_col_idx++ ) {
-                int output_row_idx = c * kernel_height * kernel_width + kernel_row_idx * kernel_width + kernel_col_idx;
-                int input_row_idx = -(pad_height / 2) + kernel_row_idx;
-
-                for ( int i = 0 ; i < n_frames_out ; i++ ) {
-                    if ( !valid_idx(input_row_idx, n_frames_in) ) {
-                        // set all values in this row to 0
-                        output.row(output_row_idx).setZero();
-                        input_row_idx += 1;
-                        continue;
-                    }
-
-                    int input_col_idx = -(pad_width / 2) + kernel_col_idx;
-                    for ( int j = 0 ; j < n_features_out ; j++ ) {
-                        int output_col_idx = i * n_features_out + j;
-                        if ( !valid_idx(input_col_idx, n_features_in) ) {
-                            output(output_row_idx, output_col_idx) = 0;
-                        }
-                        else {
-                            output(output_row_idx, output_col_idx) = input(c, input_row_idx * n_features_in + input_col_idx);
-                        }
-                        input_col_idx += stride;
-                    }
-                    input_row_idx += 1;
-                }
-
+    Matrixf padded_input = Matrixf::Zero(n_frames_in + pad_height, n_features_in + pad_width);
+    Matrixf output = Matrixf::Zero(n_filters_in * kernel_height * kernel_width, n_frames_out * n_features_out);
+    for ( size_t i = 0 ; i < input.size() ; i++ ) {
+        padded_input.block(pad_height / 2, pad_width / 2, n_frames_in, n_features_in) = input[i];
+        for ( size_t j = 0 ; j < n_frames_out ; j++ ) {
+            for ( size_t k = 0 ; k < n_features_out ; k++ ) {
+                size_t col_idx = j * n_features_out + k;
+                Matrixf target_block = padded_input.block(j, k * stride, kernel_height, kernel_width);
+                output.col(col_idx).segment(i * kernel_height * kernel_width, kernel_height * kernel_width) = Eigen::Map<Vectorf>(target_block.data(), target_block.size());
             }
         }
     }
-    
-
     return output;
 }
 
