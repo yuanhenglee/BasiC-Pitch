@@ -31,11 +31,11 @@ To building the .so or the executable separately, you can use flags '-p' and '-e
 ```bash
 ./build.sh -h
 
-Usage: cmd [-p] [-e]
-  -p: build python module
-  -e: build executable
-  -t: run tests, only valid when python module is built
-  -g: enable gprof profiling
+# Usage: cmd [-p] [-e]
+#   -p: build python module
+#   -e: build executable
+#   -t: run tests, only valid when python module is built
+#   -g: enable gprof profiling
 ```
 
 ## Run the example
