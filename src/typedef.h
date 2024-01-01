@@ -1,7 +1,13 @@
 #pragma once
 
+// #define EIGEN_DONT_PARALLELIZE
+// #define USE_MKL
+#ifdef USE_MKL
+#define EIGEN_USE_MKL_ALL
+#endif
+
 #include "Eigen/Core"
-#include "Eigen/Sparse"
+#include "Eigen/Dense"
 #include <vector>
 
 typedef Eigen::Matrix<float, 1, Eigen::Dynamic, Eigen::RowMajor> Vectorf;

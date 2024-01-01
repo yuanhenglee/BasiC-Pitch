@@ -5,6 +5,11 @@
 #include "cnn.h"
 #include "note.h"
 
+struct PthreadArg {
+    const Vectorf* audio;
+    int idx;
+};
+
 class amtModel {
     public:
 
@@ -21,6 +26,7 @@ class amtModel {
         // inference API for Eigen IO
         void inferenceFrame( const Vectorf& x );
 
+        void inferenceFramePthread( PthreadArg* arg );
 
         // get the CQ object, just for testing
         CQ getCQ() { return _cqt; }

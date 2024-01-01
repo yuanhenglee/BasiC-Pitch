@@ -7,11 +7,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Global settings
 set(LDFLAGS "-O3 -fopenmp -fno-math-errno -march=native -DNDEBUG -w")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
 
 if ( GPROF )
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
+
+# MKL
+find_package(MKL CONFIG REQUIRED PATHS $ENV{MKLROOT})
+include_directories(${MKL_INCLUDE})
+# set(ENV{MKLROOT} /opt/intel/oneapi/mkl/2023.2.0)
+set(LDFLAGS "${LDFLAGS} -L{MKLROOT}/lib -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL_ILP64 -m64 -I${MKLROOT}/include")
+# set(BLAS_VENDOR Intel10_64lp)
+# find_package(BLAS REQUIRED)
+# print MKLROOT
+# include_directories(${MKLROOT}/include)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LDFLAGS}")
 
 # cnpy
 set( CNPY_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/cnpy )

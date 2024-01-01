@@ -36,11 +36,15 @@ Matrixf conv2d( const Matrixf &x, const Matrixf &filter_kernel, int stride ) {
     // Matrixf temp(filter_kernel.rows(), filter_kernel.cols());
     for ( int i = 0 ; i < n_samples_out ; i++ ) {
         for ( int j = 0 ; j < n_features_out ; j++ ) {
-        ;
             result(i, j) = (
-                padded_x.block(i , j * stride, filter_kernel.rows(), filter_kernel.cols())\
-                .cwiseProduct(filter_kernel)
+                padded_x.block(i , j * stride, filter_kernel.rows(), filter_kernel.cols()).cwiseProduct(filter_kernel)
             ).sum();
+            // forloop version
+            // for ( int k = 0 ; k < filter_kernel.rows() ; k++ ) {
+            //     for ( int l = 0 ; l < filter_kernel.cols() ; l++ ) {
+            //         result(i, j) += padded_x(i + k, j * stride + l) * filter_kernel(k, l);
+            //     }
+            // }
         }
     }    
 
