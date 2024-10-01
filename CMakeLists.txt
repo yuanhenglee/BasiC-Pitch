@@ -13,11 +13,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
 
 # MKL
-find_package(MKL CONFIG REQUIRED PATHS $ENV{MKLROOT})
-include_directories(${MKL_INCLUDE})
-# set(ENV{MKLROOT} /opt/intel/oneapi/mkl/2023.2.0)
-set(LDFLAGS "${LDFLAGS} -L{MKLROOT}/lib -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL_ILP64 -m64 -I${MKLROOT}/include")
+# find_package(MKL CONFIG REQUIRED PATHS $ENV{MKLROOT})
+# include_directories(${MKL_INCLUDE})
+# # set(ENV{MKLROOT} /opt/intel/oneapi/mkl/2023.2.0)
+# set(LDFLAGS "${LDFLAGS} -L{MKLROOT}/lib -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL_ILP64 -m64 -I${MKLROOT}/include")
 # set(BLAS_VENDOR Intel10_64lp)
 # find_package(BLAS REQUIRED)
 # print MKLROOT
@@ -38,7 +38,7 @@ set(EIGEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/ext/eigen-3.3.7)
 include_directories(${EIGEN_ROOT})
 
 # Find Python and pybind11 package
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 REQUIRED)
 
 find_package(ZLIB REQUIRED)
