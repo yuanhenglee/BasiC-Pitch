@@ -8,8 +8,6 @@ Music Transcription) library written in C++.
 BasiCPP Pitch is an instrument-agnostic and polyphonic-capable AMT (Automatic
 Music Transcription) library written in C++.
 
-- github repository:[repo](https://github.com/yuanhenglee/basicpp-pitch)
-
 Provide any compatible audio file, the library will generate a MIDI file with
 the notes it detected. The library also provides Python API, which is
 implemented by pybind11, to make it easier to use. 
@@ -62,13 +60,6 @@ stacking harmonics, we create a comprehensive frequency representation for each
 time frame, enabling the subsequent steps to better discern individual notes in
 the presence of harmonically rich audio. We employ a Convolutional Neural
 Network (CNN) architecture to generate notes from the preprocessed audio frames. 
-
-## Prospective Users
-
-Music producers and engineers can employ it to transcribe audio recordings into
-MIDI files, facilitating tasks like remixing and editing. Music researchers and
-analysts can conduct in-depth compositional studies, while educators and
-students can use it for ear training and composition exercises.
 
 ## System Architecture
 
@@ -150,48 +141,6 @@ midi = note2midi(notes)
 midi.write(midi_file_path)
 ```
 See `python/run.py` for more details.
-
-## Engineering Infrastructure
-
-1. Automatic build system: `CMake`
-2. Version control: `Git`
-3. Testing framework: `Pytest`
-4. Documentation: `README`, `PyDoc`
-
-## Schedule
-
-* Week 1 (10/30):
-    - [ ] Set up the environment and project structure
-    - [ ] Test the pure Python prototype
-    - [ ] Learning in-depth about CQT
-* Week 2 (11/06):
-    - [ ] Implement CQT ( in C++ and wrap it with pybind11 )
-    - [ ] Write tests for CQT correctness
-* Week 3 (11/13):
-    - [ ] Implement the initialization of the CNN architecture
-    - [ ] Implement the inference function ( in C++ and wrap it with pybind11 )
-* Week 4 (11/20):
-    - [ ] Gather the pre-trained CNN model weights in desired format
-    - [ ] Implement the weight loader for the CNN model in C++
-    - [ ] Write tests for the note generation
-* Week 5 (11/27):
-    - [ ] Implement the post-processing steps
-    - [ ] Write tests for the post-processing steps
-    - [ ] Implement the note alignment
-    - [ ] Write tests for the note alignment
-* Week 6 (12/04):
-    - [ ] Try to improve the inference speed
-        - [ ] XSIMD
-        - [ ] Eigen
-        - [ ] OpenMP
-        - [ ] ...
-* Week 7 (12/11):
-    - [ ] Write documentation
-    - [ ] Write examples
-* Week 8 (12/18):
-    - [ ] Refine the project structure
-    - [ ] Prepare for the presentation
-
 
 ## References
 
